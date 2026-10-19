@@ -1,0 +1,198 @@
+{
+  "project_identity": {
+    "app_name": "My Expenses (Minhas Despesas)",
+    "app_type": "dashboard / saas_app (Personal Finance Management)",
+    "archetype": "ARCHETYPE 4: SWISS & HIGH-CONTRAST + ARCHETYPE 1: ORGANIC FINTECH (Monarch & Nubank Inspired)",
+    "design_goal": "Modernize legacy Angular app into a sleek React financial command center with high clarity, precise visual hierarchy, tabular numeric alignment, and interactive analytics.",
+    "currency_locale": "BRL (R$) with English language (e.g. R$ 1.250,50)",
+    "theme_mode": "Light default with subtle warm slate tinting, high contrast for numbers, and full Dark mode toggle support."
+  },
+  "typography": {
+    "heading_font": "Plus Jakarta Sans, Outfit, sans-serif",
+    "body_font": "Inter, system-ui, sans-serif",
+    "numeric_font": "JetBrains Mono, Roboto Mono, monospace (with tabular-nums)",
+    "scale": {
+      "hero_kpi": "text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight tabular-nums",
+      "h1": "text-2xl sm:text-3xl font-bold tracking-tight",
+      "h2": "text-xl sm:text-2xl font-semibold tracking-tight",
+      "h3": "text-lg font-medium",
+      "body": "text-sm sm:text-base leading-relaxed",
+      "small_label": "text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+    },
+    "rules": [
+      "Always apply `tabular-nums` class to money figures, currency tables, chart tooltips, and transaction amounts to avoid horizontal layout jitter.",
+      "Main titles must use bold weight with `tracking-tight`.",
+      "Overlines and table column headers must be uppercase `text-xs font-semibold tracking-wider text-slate-500`."
+    ]
+  },
+  "colors": {
+    "theme": {
+      "light": {
+        "background": "#F8FAFC",
+        "surface": "#FFFFFF",
+        "surface_subtle": "#F1F5F9",
+        "border": "#E2E8F0",
+        "foreground": "#0F172A",
+        "muted_foreground": "#64748B",
+        "primary": "#0F172A",
+        "primary_hover": "#1E293B",
+        "accent": "#10B981"
+      },
+      "dark": {
+        "background": "#0B0F17",
+        "surface": "#111827",
+        "surface_subtle": "#1F2937",
+        "border": "#1F2937",
+        "foreground": "#F9FAFB",
+        "muted_foreground": "#9CA3AF",
+        "primary": "#F9FAFB",
+        "primary_hover": "#E5E7EB",
+        "accent": "#10B981"
+      }
+    },
+    "financial_semantic": {
+      "income": {
+        "text": "#059669",
+        "bg_badge": "#D1FAE5",
+        "border": "#A7F3D0",
+        "chart": "#10B981"
+      },
+      "expense": {
+        "text": "#DC2626",
+        "bg_badge": "#FEE2E2",
+        "border": "#FCA5A5",
+        "chart": "#EF4444"
+      },
+      "net_balance": {
+        "text": "#2563EB",
+        "bg_badge": "#DBEAFE",
+        "border": "#BFDBFE",
+        "chart": "#3B82F6"
+      },
+      "warning_budget": {
+        "text": "#D97706",
+        "bg_badge": "#FEF3C7",
+        "border": "#FDE68A",
+        "chart": "#F59E0B"
+      }
+    },
+    "chart_palette": [
+      "#10B981",
+      "#3B82F6",
+      "#8B5CF6",
+      "#F59E0B",
+      "#EC4899",
+      "#06B6D4",
+      "#6366F1",
+      "#14B8A6"
+    ],
+    "rules": [
+      "FORBIDDEN COLOR: #1B93A4 (teal green) is forbidden for primary dashboard background.",
+      "Income must ALWAYS be green (#10B981 / #059669).",
+      "Expenses must ALWAYS be red (#EF4444 / #DC2626).",
+      "Borders must be subtle 1px `#E2E8F0` (light mode) or `#1F2937` (dark mode) to keep clean cardless/thin-card aesthetic."
+    ]
+  },
+  "layout_and_navigation": {
+    "sidebar": {
+      "type": "Fixed collapsible desktop sidebar with mobile drawer sheet",
+      "header": "Account Switcher Dropdown (select multiple financial accounts or 'All Accounts')",
+      "nav_items": [
+        {"name": "Overview", "icon": "LayoutDashboard", "path": "/"},
+        {"name": "Transactions", "icon": "Receipt", "path": "/transactions"},
+        {"name": "Distribution", "icon": "PieChart", "path": "/distribution"},
+        {"name": "History", "icon": "TrendingUp", "path": "/history"},
+        {"name": "Monthly Analysis", "icon": "LineChart", "path": "/monthly-analysis"},
+        {"name": "Four Months Review", "icon": "BarChart2", "path": "/four-months-review"},
+        {"name": "Month Comparison", "icon": "GitCompare", "path": "/month-comparison"},
+        {"name": "Budgets", "icon": "Wallet", "path": "/budgets"},
+        {"name": "Budget Analysis", "icon": "Sliders", "path": "/budget-analysis"},
+        {"name": "Parties / Debts", "icon": "Users", "path": "/parties"},
+        {"name": "Tags", "icon": "Tag", "path": "/tags"},
+        {"name": "Planning Calendar", "icon": "Calendar", "path": "/planning"},
+        {"name": "Import & Export", "icon": "FileSpreadsheet", "path": "/import-export"},
+        {"name": "Settings", "icon": "Settings", "path": "/settings"}
+      ]
+    },
+    "page_container": "max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6"
+  },
+  "key_features_guidance": {
+    "home_overview": {
+      "kpi_cards": "3 main stat cards: Total Income (green icon), Total Expenses (red icon), Net Balance (blue/emerald icon) with trend indicators vs previous period.",
+      "charts": "Grid layout: Left col-span-2 line chart ('Expenses grouped by category'), Right col-span-1 bar chart ('Income vs Expenses history')."
+    },
+    "transactions_view": {
+      "month_summary_header": "Sticky top bar showing Opening Balance + Net Income = Total Closing Balance for the selected month.",
+      "filters": "Search text filter, Month/Year picker, Category selector, Tag multi-select.",
+      "list_styling": "Grouped by month/day. Rows show Payee avatar, Category badge, Tags chips, Comment popover, Amount formatted as `+ R$ 250,00` (green) or `- R$ 85,50` (red)."
+    },
+    "distribution_view": {
+      "doughnut_chart": "Recharts PieChart/Doughnut with inner radius cutout, showing spending per category.",
+      "drill_down": "Interactive list on the right allowing users to click a category to drill into its subcategories with progress breakdown."
+    },
+    "history_and_analysis_views": {
+      "history": "Combined Bar + Line chart tracking monthly income/expense bars and cumulative balance line over 12 months.",
+      "monthly_analysis": "Per-week line chart with month/year picker.",
+      "four_months_review": "4-month comparative bar chart.",
+      "month_comparison": "Side-by-side comparison matrix of two selectable months by category."
+    },
+    "budgets": {
+      "budget_cards": "Grid of budget cards with circular progress or linear progress bar (% spent), total budgeted, spent, remaining, and category tags included.",
+      "create_edit_modal": "Shadcn Dialog with inputs for budget name, target amount, assigned categories, and period."
+    },
+    "parties_and_debts": {
+      "split_view": "Left panel: Searchable list of payees/debtors with net balance sum. Right panel: Detailed transaction history filtered by selected party."
+    },
+    "planning_calendar": {
+      "calendar": "Grid or calendar view of scheduled/planned recurring payments. Paid items highlighted in emerald green badge, unpaid in crimson red badge.",
+      "actions": "'Copy to next month' batch button and 'Clean-up completed' action."
+    },
+    "import_export": {
+      "dropzone": "Drag-and-drop zone for uploading JSON transaction files, with validation preview table before committing."
+    },
+    "settings": {
+      "danger_zone": "Card with red border for 'Delete All Transactions' requiring confirmation modal."
+    }
+  },
+  "testing_guidelines": {
+    "mandatory_data_testids": [
+      "sidebar-account-switcher",
+      "sidebar-nav-item-[section_name]",
+      "kpi-stat-income",
+      "kpi-stat-expense",
+      "kpi-stat-balance",
+      "transaction-search-input",
+      "transaction-month-filter",
+      "transaction-item-[id]",
+      "budget-card-[id]",
+      "budget-create-button",
+      "planning-copy-next-month-button",
+      "import-json-input",
+      "danger-delete-all-button",
+      "currency-toggle-or-display"
+    ],
+    "rule": "Every interactive button, input, tab, dropdown trigger, and chart container MUST include a descriptive data-testid attribute in kebab-case."
+  },
+  "media_assets": {
+    "image_urls": [
+      {
+        "category": "hero_fintech_abstract",
+        "url": "https://images.unsplash.com/photo-1686061592689-312bbfb5c055?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1NzZ8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBmaW5hbmNpYWwlMjBkYXNoYm9hcmQlMjBhYnN0cmFjdCUyMG1pbmltYWwlMjBhcmNoaXRlY3R1cmV8ZW58MHx8fHwxNzkyNDI0NDQ5fDA&ixlib=rb-4.1.0&q=85",
+        "description": "Clean financial data display background"
+      },
+      {
+        "category": "minimal_architecture",
+        "url": "https://images.unsplash.com/photo-1548248823-ce16a73b6d49?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1NzZ8MHwxfHNlYXJjaHw0fHxtb2Rlcm4lMjBmaW5hbmNpYWwlMjBkYXNoYm9hcmQlMjBhYnN0cmFjdCUyMG1pbmltYWwlMjBhcmNoaXRlY3R1cmV8ZW58MHx8fHwxNzkyNDI0NDQ5fDA&ixlib=rb-4.1.0&q=85",
+        "description": "Abstract sleek geometric architectural visual"
+      }
+    ]
+  },
+  "UNIVERSAL GUIDELINES FOR MAIN AGENT": [
+    "Do NOT use complete transparent backgrounds on headers, dropdowns, popovers, or modals. Use blur backdrop with non-zero opacity (e.g. `bg-white/90 backdrop-blur-md` or `bg-slate-900/90`).",
+    "Do NOT center align the app container. Maintain clean left-aligned functional dashboard grids.",
+    "Use `tabular-nums` for all monetary numbers and tables.",
+    "Always provide micro-hover feedback on interactive cards, table rows, and buttons using Tailwind scale transitions.",
+    "Ensure all forms use controlled React state or react-hook-form + zod validation.",
+    "Add `data-testid` to all functional components as specified in testing guidelines."
+  ]
+}
