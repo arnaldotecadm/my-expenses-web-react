@@ -76,8 +76,8 @@ export default function Overview() {
         />
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-3">
-        <Panel title="Expenses by Category" subtitle="Across recent months" className="lg:col-span-2">
+      <div className="mt-6 grid gap-6 grid-cols-1">
+        <Panel title="Expenses by Category" subtitle="Across recent months">
           <div className="h-[320px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={catLineData} margin={{ left: -10, right: 8, top: 8 }}>
