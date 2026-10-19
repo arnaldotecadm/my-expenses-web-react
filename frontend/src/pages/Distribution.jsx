@@ -68,19 +68,20 @@ export default function Distribution() {
             </div>
           </Panel>
 
-          <Panel className="lg:col-span-2" title="Details" subtitle="Click a category to drill down">
+          <Panel className="lg:col-span-2" title={drill ? "Subcategories" : "Details"} subtitle={drill ? drill : "Click a category to drill down"}>
             <div className="space-y-1.5">
-              {data.map((c, i) => (
+              {active.map((c, i) => (
                 <button
                   key={c.name}
-                  data-testid={`distribution-cat-${c.name}`}
-                  onClick={() => setDrill(drill === c.name ? null : c.name)}
-                  className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-secondary ${drill === c.name ? "bg-secondary" : ""}`}
+                  data-testid={`distribution-${drill ? "sub" : "cat"}-${c.name}`}
+                  onClick={() => !drill && setDrill(c.name)}
+                  className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-secondary ${drill ? "cursor-default" : ""}`}
                 >
                   <span className="h-3 w-3 rounded-full" style={{ background: colorAt(i) }} />
                   <span className="flex-1 truncate text-sm font-medium">{c.name}</span>
+                  <span className="text-xs tabnum text-muted-foreground">{total ? ((c.amount / total) * 100).toFixed(1) : 0}%</span>
                   <span className="text-sm tabnum text-muted-foreground">{fmt(c.amount)}</span>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  {!drill && <ChevronRight className="h-4 w-4 text-muted-foreground" />}
                 </button>
               ))}
             </div>

@@ -24,6 +24,7 @@ function ExportPanel() {
   const [busy, setBusy] = useState(false);
   const run = async (kind) => {
     setBusy(true);
+    try {
     const groups = await api.allWithSummary(account);
     const txs = groups.flatMap((g) => g.transactionList);
     const base = (selected?.label || "account").replace(/\s+/g, "-").toLowerCase();
@@ -34,8 +35,12 @@ function ExportPanel() {
       const rows = txs.map((t) => [t.date, t.payee, t.category, t.subCategory, t.amount, (t.tags || []).join("|")].map((v) => `"${String(v ?? "").replace(/"/g, '""')}"`).join(","));
       download(`${base}.csv`, [head, ...rows].join("\n"), "text/csv");
     }
-    setBusy(false);
     toast.success(`Exported ${txs.length} transactions`);
+    } catch {
+      toast.error("Export failed");
+    } finally {
+      setBusy(false);
+    }
   };
   return (
     <Panel title="Export" subtitle="Download all transactions of the selected account">
@@ -56,18 +61,28 @@ export default function ImportExport() {
   const onFile = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const data = await api.parseFile(file.name, await file.text());
-    if (!data.transactions?.length) toast.error("No transactions found in file");
-    setParsed({ ...data, label: data.label || file.name.replace(/\.[^.]+$/, "") });
     e.target.value = "";
+    try {
+      const data = await api.parseFile(file.name, await file.text());
+      if (!data.transactions?.length) toast.error("No transactions found in file");
+      setParsed({ ...data, label: data.label || file.name.replace(/\.[^.]+$/, "") });
+    } catch {
+      toast.error("Could not read this file");
+    }
   };
 
   const save = async () => {
     setSaving(true);
-    const r = await api.saveBatch(parsed).finally(() => setSaving(false));
-    toast.success(r.message);
-    setParsed(null);
-    qc.invalidateQueries();
+    try {
+      const r = await api.saveBatch(parsed);
+      r.skipped ? toast.warning(r.message) : toast.success(r.message);
+      setParsed(null);
+      qc.invalidateQueries();
+    } catch {
+      toast.error("Import failed");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (

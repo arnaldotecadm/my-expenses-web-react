@@ -76,10 +76,10 @@ export default function Transactions() {
       ) : (
         <div className="space-y-6">
           {filtered.map((g) => (
-            <div key={g.reference} className="rounded-2xl border border-border bg-card overflow-hidden">
-              <div className="sticky top-16 z-10 flex flex-wrap items-center justify-between gap-2 border-b border-border bg-secondary/60 px-5 py-3 backdrop-blur-sm">
+            <div key={g.reference} className="rounded-2xl border border-border bg-card">
+              <div className="sticky top-[61px] z-10 flex flex-wrap items-center justify-between gap-2 rounded-t-2xl border-b border-border bg-secondary/90 px-5 py-3 backdrop-blur-md">
                 <div className="font-semibold">{g.summaryDTO.month}</div>
-                <div className="flex items-center gap-4 text-sm tabnum">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs sm:text-sm tabnum">
                   <span className="text-emerald-600 dark:text-emerald-400">{fmt(g.summaryDTO.income)}</span>
                   <span className="text-red-600 dark:text-red-400">{fmt(g.summaryDTO.expense)}</span>
                   <span className="text-muted-foreground">

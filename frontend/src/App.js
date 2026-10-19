@@ -35,7 +35,7 @@ function App() {
           </Routes>
         </AppLayout>
       </BrowserRouter>
-      <Toaster position="top-right" richColors />
+      <Toaster position="bottom-right" richColors />
     </AccountProvider>
   );
 }

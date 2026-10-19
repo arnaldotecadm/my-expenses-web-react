@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="17" time="3.212" timestamp="2026-10-19T15:57:07.825838+00:00" hostname="agent-env-e09946e2-c672-4b29-9359-154ebff2210b"><testcase classname="tests.test_expenses_api" name="test_accounts" time="0.209" /><testcase classname="tests.test_expenses_api" name="test_all_with_summary" time="0.143" /><testcase classname="tests.test_expenses_api" name="test_accounts_differ" time="0.203" /><testcase classname="tests.test_expenses_api" name="test_summary_per_category" time="0.063" /><testcase classname="tests.test_expenses_api" name="test_year_month" time="0.065" /><testcase classname="tests.test_expenses_api" name="test_current_month" time="0.212" /><testcase classname="tests.test_expenses_api" name="test_last4" time="0.070" /><testcase classname="tests.test_expenses_api" name="test_comparison" time="0.067" /><testcase classname="tests.test_expenses_api" name="test_category_chart" time="0.132" /><testcase classname="tests.test_expenses_api" name="test_party" time="0.125" /><testcase classname="tests.test_expenses_api" name="test_tags" time="0.130" /><testcase classname="tests.test_expenses_api" name="test_planning_crud" time="0.464" /><testcase classname="tests.test_expenses_api" name="test_planning_validation" time="0.068" /><testcase classname="tests.test_expenses_api" name="test_copy_over_and_clean" time="0.206" /><testcase classname="tests.test_expenses_api" name="test_parse_and_save" time="0.262" /><testcase classname="tests.test_expenses_api" name="test_import_missing_date_does_not_break" time="0.188"><failure message="assert (200 in (400, 422) or 500 == 200)&#10; +  where 200 = &lt;Response [200]&gt;.status_code&#10; +  and   500 = &lt;Response [500]&gt;.status_code">s = &lt;requests.sessions.Session object at 0xf9586817f4d0&gt;
+
+    def test_import_missing_date_does_not_break(s):
+        # Transactions with missing date would crash ref_of() on every endpoint
+        r = s.post(f"{API}/account", json={"label": "TEST_NoDate", "transactions": [{"payee": "x", "amount": -1}]})
+        accs = s.get(f"{API}/account").json()
+        acc = [a for a in accs if a["label"] == "TEST_NoDate"][-1]["uuid"]
+        g = s.get(f"{API}/transaction/all-with-summary", params={"account": acc})
+&gt;       assert r.status_code in (400, 422) or g.status_code == 200
+E       assert (200 in (400, 422) or 500 == 200)
+E        +  where 200 = &lt;Response [200]&gt;.status_code
+E        +  and   500 = &lt;Response [500]&gt;.status_code
+
+backend/tests/test_expenses_api.py:176: AssertionError</failure></testcase><testcase classname="tests.test_expenses_api" name="test_stats" time="0.067" /></testsuite></testsuites>

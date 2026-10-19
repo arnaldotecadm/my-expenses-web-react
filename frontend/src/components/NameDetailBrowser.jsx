@@ -8,7 +8,8 @@ import { Panel } from "@/components/Panel";
 import { Loader, EmptyState } from "@/components/Loader";
 import { Input } from "@/components/ui/input";
 
-const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+const slug = (s) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+const fmtDate = (d) => new Date(d + "T00:00:00").toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 
 export function NameDetailBrowser({ title, subtitle, icon, kind, listFn, detailFn }) {
   const account = useAccountUuid();
@@ -49,7 +50,7 @@ export function NameDetailBrowser({ title, subtitle, icon, kind, listFn, detailF
               <div className="divide-y divide-border" data-testid={`${kind}-detail-list`}>
                 {d.transactionList.map((t, i) => (
                   <div key={i} className="flex items-center gap-4 py-2.5">
-                    <span className="w-24 text-xs text-muted-foreground tabnum">{t.date}</span>
+                    <span className="w-24 text-xs text-muted-foreground tabnum">{fmtDate(t.date)}</span>
                     <span className="flex-1 truncate text-sm">{t.comment || "—"}</span>
                     <span className={`text-sm font-semibold tabnum ${t.amount >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>{fmtSigned(t.amount)}</span>
                   </div>

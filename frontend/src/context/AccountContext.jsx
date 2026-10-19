@@ -12,7 +12,10 @@ export function AccountProvider({ children }) {
   const [selected, setSelected] = useState(null);
 
   useEffect(() => {
-    if (accounts.length && !selected) setSelected(accounts[0]);
+    if (!accounts.length) return;
+    const fresh = selected && accounts.find((a) => a.uuid === selected.uuid);
+    if (!fresh) setSelected(accounts[0]);
+    else if (fresh !== selected) setSelected(fresh);
   }, [accounts, selected]);
 
   return (

@@ -104,10 +104,16 @@ async def save_batch(payload: dict):
         upsert=True,
     )
     txs = payload.get("transactions", []) or []
-    inserted = 0
+    inserted = skipped = 0
     for t in txs:
+        try:
+            datetime.strptime(str(t.get("date")), "%Y-%m-%d")
+            float(t.get("amount"))
+        except (ValueError, TypeError):
+            skipped += 1
+            continue
         doc = {
-            "uuid": t.get("uuid") or str(uuid.uuid4()),
+            "uuid": str(uuid.uuid4()),
             "accountUuid": acc_uuid,
             "amount": float(t.get("amount", 0)),
             "category": (t.get("category") or "Uncategorized").split(":")[0],
@@ -120,7 +126,10 @@ async def save_batch(payload: dict):
         }
         await db.transactions.insert_one(doc)
         inserted += 1
-    return {"message": f"Saved account '{label}' with {inserted} transactions."}
+    msg = f"Saved account '{label}' with {inserted} transactions."
+    if skipped:
+        msg += f" Skipped {skipped} invalid rows."
+    return {"message": msg, "uuid": acc_uuid, "inserted": inserted, "skipped": skipped}
 
 
 @api_router.post("/upload/parse/{filename}")
@@ -436,7 +445,7 @@ async def _party_detail(account, payee):
 @api_router.get("/party/names")
 async def party_names(account: Optional[str] = None):
     txs = await get_transactions(account)
-    return sorted({t["payee"] for t in txs if t.get("payee")})
+    return sorted({t["payee"] for t in txs if t.get("payee")}, key=str.lower)
 
 
 @api_router.get("/party/{party}")
@@ -452,7 +461,7 @@ async def tag_names(account: Optional[str] = None):
     for t in txs:
         for tag in t.get("tags", []):
             tags.add(tag)
-    return sorted(tags)
+    return sorted(tags, key=str.lower)
 
 
 @api_router.get("/tag/{tag}")
@@ -494,7 +503,8 @@ async def planning_copy_over(year_month: str, account: Optional[str] = None):
         last = calendar.monthrange(ny, nm)[1]
         day = f"{min(int(day), last):02d}"
         new_date = f"{nref}-{day}"
-        exists = await db.plannings.find_one({"date": new_date, "item": p["item"], "copiedOver": True})
+        exists = await db.plannings.find_one({"date": new_date, "item": p["item"], "copiedOver": True,
+                                              "accountUuid": p.get("accountUuid")})
         if exists:
             continue
         await db.plannings.insert_one({

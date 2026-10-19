@@ -1,0 +1,53 @@
+{
+  "summary": "First test run of the React re-write of My Expenses. Backend: 16/17 pytest tests passed across all endpoints (accounts, transactions, analysis, category, party, tag, planning CRUD/copy/clean, import parse+save, stats). The 1 failure: an imported transaction with no date makes every endpoint for that account return 500. Frontend: all 11 sidebar pages load with no JS errors. Account switcher, theme toggle, Transactions search and month filter, Distribution drill-down/back and month/year picker, Monthly Analysis month change, Four Months cards/chart/table, Month Comparison defaults (Oct vs Sep) and target change, Parties/Tags search/click/total, full Planning CRUD + toggle paid + copy-over/clean-up toasts, CSV/JSON export downloads, and JSON import -> preview -> save -> new account in switcher all work. Money is shown in BRL everywhere. One visible UI bug: on the Transactions page the sticky month header sits about 64px too low inside each card and covers the first transaction row.",
+  "backend_issues": {
+    "critical": [
+      {"endpoint": "POST /api/account (import)", "issue": "No validation of transactions. A transaction without 'date' (or with a bad one) gets stored as date=None, and then ref_of() (t['date'][:7]) crashes every endpoint for that account with a 500: all-with-summary, yearMonth, analysis, etc. Calls with no account or account='all' would break for the whole DB. Reproduced: POST /api/account {label, transactions:[{payee:'x',amount:-1}]} -> GET /api/transaction/all-with-summary?account=<uuid> = 500.", "priority": "HIGH"}
+    ],
+    "minor": [
+      {"endpoint": "POST /api/account (import)", "issue": "The import reuses t.uuid when present. Re-importing an exported JSON (which contains uuids) creates duplicate transaction uuids across accounts."},
+      {"endpoint": "PUT /api/planning/copy-over/{ym}", "issue": "The duplicate check (find_one date+item+copiedOver) does not filter by accountUuid, so copies for one account can block copies for another."},
+      {"endpoint": "GET /api/party/names, /api/tag", "issue": "Sorting is case-sensitive, so 'iFood' is listed after 'Zara'. Use sorted(key=str.lower)."},
+      {"endpoint": "GET /api/planning/{uuid}, /api/budget/{uuid}, /api/budget/analysis/{uuid}", "issue": "Return 200 with {} for a missing resource instead of 404. DELETE /api/planning/{uuid} returns 200 even when nothing was deleted."},
+      {"endpoint": "server.py", "issue": "Uses the deprecated @app.on_event startup/shutdown (use lifespan). Each analysis endpoint loads ALL transactions into memory and filters in Python. Fine for mock data, but it will not scale."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "Transactions month group header", "issue": "The sticky header uses 'sticky top-16' inside a card with overflow-hidden. The card becomes the sticky container, so the header is pushed 64px down inside the card. This leaves a blank gap at the top of the card, and the header covers the first transaction row(s), which show through the blurred header. Seen on desktop and mobile. Fix: remove overflow-hidden from the card (use rounded corners on the children or overflow-clip), or use top-0.", "selector": "main .sticky.top-16", "priority": "HIGH"},
+      {"component": "Planning (mobile 390px)", "issue": "The 3 action buttons (Copy to next month / Clean copied / New event) overflow the panel header horizontally, and 'New event' is cut off. Rows are cramped.", "selector": "[data-testid=planning-add-button]", "priority": "MEDIUM"},
+      {"component": "Import & Export", "issue": "parseFile and saveBatch are not wrapped in try/catch. A network or 500 error gives an unhandled promise rejection with no error toast, and in ExportPanel 'busy' would stay true forever if allWithSummary fails.", "selector": "[data-testid=import-save-button]", "priority": "MEDIUM"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Planning dialog", "issues": ["The due date uses the browser's native <input type='date'> instead of the shadcn Calendar/Popover date picker."]},
+      {"screen": "Distribution", "issues": ["When drilled into a category, the pie's subcategory colours do not match the Details list colours (e.g. Shopping is green in the list, while the pie shows Electronics green and Clothes blue). The Details panel keeps showing categories instead of the subcategory amounts."]},
+      {"screen": "Toasts", "issues": ["Top-right sonner toasts cover the theme-toggle button for several seconds."]},
+      {"screen": "Transactions mobile", "issues": ["The month summary (income / expense / opening -> total) wraps awkwardly at 390px."]},
+      {"screen": "Parties/Tags", "issues": ["Dates are shown raw (2026-10-05) rather than localized."]}
+    ]
+  },
+  "test_report_links": ["/app/backend/tests/test_expenses_api.py", "/app/test_reports/pytest/pytest_results.xml"],
+  "action_items": [
+    "Backend: validate imported transactions in POST /api/account. Require a date in YYYY-MM-DD format (use a Pydantic model) and return 422 on invalid input, or skip invalid rows. Also make ref_of() defensive.",
+    "Transactions page: fix the sticky month header overlap (overflow-hidden + sticky top-16 inside the card).",
+    "Planning: make the panel actions wrap or stack on mobile.",
+    "Import/Export: add try/catch with error toasts and reset the busy/saving state.",
+    "Optional: generate new uuids on import, filter copy-over dedup by account, sort parties/tags case-insensitively, return 404 for missing planning/budget, use the shadcn Calendar for the planning date, and align Distribution drill-down colours."
+  ],
+  "critical_code_review_comments": [
+    "server.py ref_of()/week_of() assume a valid date string. Any malformed import poisons the account's data (HIGH).",
+    "parse_file accepts arbitrary JSON and the frontend sends the parsed object straight to save_batch without a schema.",
+    "NameDetailBrowser slug strips non-ASCII characters, producing testids like parties-item-assa-, parties-item-p-o-de-a-car and parties-item-disney-, which can collide.",
+    "Planning: delete happens immediately with no confirmation.",
+    "AccountContext keeps a stale 'selected' object after the account list refetches (e.g. after import). This is harmless now but could show an outdated openingBalance."
+  ],
+  "updated_files": ["/app/backend/tests/test_expenses_api.py"],
+  "success_rate": {"backend": "94% (16/17)", "frontend": "95% (all requested flows pass; 1 visual overlap bug)"},
+  "test_credentials": "None - no login. /app/memory/test_credentials.md not needed.",
+  "seed_data_creation": "None persisted. TEST_-prefixed import accounts and planning items were created and then removed directly in Mongo. Copy-over to 2026-11 was cleaned up via Clean copied.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Container date is Oct 2026, and the seed covers 2026-03..2026-10 for Main Account and Savings. Run pytest /app/backend/tests/test_expenses_api.py. test_import_missing_date_does_not_break inserts a TEST_NoDate account and is expected to pass once validation is added; clean up TEST_ accounts afterwards. Do not call DELETE /api/statistics/user/records.",
+  "rca of the issue": "Import 500: save_batch stores 'date': t.get('date') = None. get_transactions then returns it and ref_of() calls None[:7], raising TypeError -> 500. Mitigation: validate with Pydantic. Sticky header: a parent with overflow:hidden becomes the sticky scroll container, so top:4rem offsets the header 64px down inside the card and over the first rows."
+}
