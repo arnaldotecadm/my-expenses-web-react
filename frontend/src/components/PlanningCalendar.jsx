@@ -1,4 +1,4 @@
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Copy } from "lucide-react";
 import { fmt } from "@/lib/format";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -36,10 +36,13 @@ export function PlanningCalendar({ year, month, items, onDayClick, onEventClick 
                       <button key={p.uuid} data-testid={`planning-calendar-event-${p.uuid}`}
                         onClick={(e) => { e.stopPropagation(); onEventClick(p); }}
                         title={`${p.item} · ${fmt(p.amount)}`}
-                        className={`flex w-full items-center gap-1 truncate rounded-md px-1.5 py-1 text-left text-[11px] font-medium transition-transform hover:-translate-y-px ${p.payed ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300" : "bg-red-500/15 text-red-700 dark:text-red-300"}`}>
-                        {p.payed && <CheckCircle2 className="h-3 w-3 shrink-0" />}
-                        <span className="truncate">{p.item}</span>
-                        <span className="ml-auto shrink-0 tabnum opacity-80">{fmt(p.amount).replace(",00", "")}</span>
+                        className={`flex w-full flex-col items-start gap-0.5 rounded-md px-1.5 py-1 text-left text-[11px] font-medium leading-tight transition-transform hover:-translate-y-px ${p.copiedOver ? "border border-dashed border-current/40" : ""} ${p.payed ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300" : "bg-red-500/15 text-red-700 dark:text-red-300"}`}>
+                        <span className="flex w-full min-w-0 items-center gap-1">
+                          {p.payed && <CheckCircle2 className="h-3 w-3 shrink-0" />}
+                          {p.copiedOver && <Copy className="h-3 w-3 shrink-0 opacity-70" />}
+                          <span className="truncate">{p.item}</span>
+                        </span>
+                        <span className="shrink-0 tabnum opacity-80">{fmt(p.amount).replace(",00", "")}</span>
                       </button>
                     ))}
                   </div>

@@ -1,0 +1,22 @@
+{
+  "summary": "Frontend-only test of the new Planning calendar (/planning). All 7 requested features pass. Calendar is the default view, with Sun..Sat headers and the right number of days (Oct 2026 = 31 days starting on Thursday; Feb 2026 = 28). The 7 seeded Oct events show on the correct days (4 paid green, 3 unpaid red), and the stats are correct (4.824,90 / 2.599,00 / 2.225,90). Clicking an empty spot on a day opens 'New event' with that date filled in (2026-10-22). Saving adds a chip on that day and updates the stats. Clicking a chip opens only one dialog, in 'Edit event' mode with the event's values; it does not also open the create dialog. Edits persist after reload and the chip turns green when marked paid. Calendar/List toggle works; in the list view, toggle paid, edit and delete all work. Copy to next month gave the toast 'Copied 8 events to 2026-11', and the Nov calendar shows the 8 events on the same day numbers. Clean copied cleared them. The list view shows an empty state for a month with no events. On mobile (390px) the page width stays 390 while the calendar scrolls sideways inside its container (scrollWidth 700 vs clientWidth 316), and day click works after scrolling. No page errors. TEST_ data was cleaned up.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Planning calendar chips", "issues": ["On mobile (cells ~100px wide) the item name is cut hard because the amount is shrink-0: 'Rent' disappears completely (only 'R$ 2.200' shows), and 'Car...', 'N..', 'I...' are cut. On desktop 'Gym members...' is cut. Suggestions: hide the amount below a breakpoint, or stack name and amount."]},
+      {"screen": "Planning calendar", "issues": ["Copied events look the same as other events in the calendar. The list view shows 'Copied over'; consider a small indicator on calendar chips too."]},
+      {"screen": "PlanningDialog", "issues": ["The due date uses the browser's native <input type=date> instead of a shadcn Calendar/Popover date picker.", "On mobile the dialog is edge-to-edge (x=0, width=390) with no side margin."]}
+    ]
+  },
+  "test_report_links": [],
+  "action_items": ["Optional: improve chip truncation on narrow cells", "Optional: use a shadcn date picker in PlanningDialog", "Optional: add a 'copied' indicator on calendar chips"],
+  "critical_code_review_comments": ["PlanningCalendar filters all items once per cell (O(days*items)); fine for mock data, but grouping items by date with a memo would be cleaner", "Day-cell divs use onClick with no role or keyboard handler, so you cannot create an event from a day with the keyboard (accessibility)"],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (skipped)", "frontend": "100%"},
+  "seed_data_creation": "None. A TEST_Water event was created, then deleted. The copy-over of Oct into Nov 2026 was cleaned with Clean copied.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Browser date is Oct 19 2026, so Planning opens on Oct 2026 by default. The Planning calendar, list view, copy-over and clean-up are verified. Seed state is restored: 7 Oct events and none in Nov."
+}
