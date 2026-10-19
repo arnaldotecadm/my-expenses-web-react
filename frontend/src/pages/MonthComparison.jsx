@@ -60,8 +60,8 @@ export default function MonthComparison() {
         </>}
       />
       {isLoading ? <Loader /> : rows.length === 0 ? <EmptyState icon={GitCompare} title="Nothing to compare" hint="Pick two months with expenses" /> : (
-        <div className="grid gap-6 lg:grid-cols-5">
-          <Panel className="lg:col-span-3" title="Spending by Category">
+        <div className="grid gap-6 grid-cols-1">
+          <Panel title="Spending by Category">
             <div className="h-[420px]" data-testid="comparison-chart">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={rows} layout="vertical" margin={{ left: 10, right: 8 }}>
@@ -76,7 +76,7 @@ export default function MonthComparison() {
               </ResponsiveContainer>
             </div>
           </Panel>
-          <Panel className="lg:col-span-2" title="Differences" subtitle={`${S} vs ${T}`}>
+          <Panel title="Differences" subtitle={`${S} vs ${T}`}>
             <div className="divide-y divide-border">
               {rows.map((r) => {
                 const up = r.diff > 0;

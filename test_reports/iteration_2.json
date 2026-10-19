@@ -1,0 +1,20 @@
+{
+  "summary": "Frontend-only test of new Overview 'Category Details' panel. All requested checks passed: table renders below 'Income vs Expenses', headers Category/Current month/Last month/Variation, rows match GET /api/analise/month-analysis-comparison/2026-10/2026-09?account=<uuid> exactly (amount=current, lastMonthAmount=last) for Main Account (7 rows) and Savings (6 rows), variation BRL diff + % with red/up for increase, green/down for decrease, neutral for 0 (Housing savings 0,00 (0.0%)). Footer totals correct (Main: 2.732,23 / 6.828,52 / -4.096,29 (60.0%); Savings: 3.097,25 / 4.981,09 / -1.883,84 (37.8%)). Account switch triggers new request with savings uuid and table updates. Subtitle 'October 2026 vs September 2026'. 3 KPI cards visible; three panels each full-width (x=496,w=1216) stacked. No page errors.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Overview Category Details", "issues": ["When last month is 0 and current > 0 the % shows '100.0%' which is mathematically misleading (e.g. Savings Health +R$ 249,07 (100.0%)); consider showing 'new' or '—'", "Per-row Variation badges have no data-testid (only the total has one); consider overview-category-variation-<slug>"]}
+    ]
+  },
+  "test_report_links": [],
+  "action_items": ["Optional: display 'New'/'—' instead of 100% when previous month is 0", "Optional: add data-testid to per-row variation badges"],
+  "critical_code_review_comments": ["CategoryDetails.jsx: pct fallback `cur ? 100 : 0` when prev=0 is misleading", "Row Variation component rendered without testid"],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (skipped)", "frontend": "100%"},
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Overview Category Details verified for Main and Savings accounts against API for 2026-10 vs 2026-09. Other pages covered in iteration_1."
+}

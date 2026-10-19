@@ -15,7 +15,7 @@ function Variation({ cur, prev, testid }) {
   return (
     <span data-testid={testid} className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold tabnum ${tone}`}>
       <Icon className="h-3 w-3" />
-      {diff > 0 ? "+" : diff < 0 ? "-" : ""}{fmt(Math.abs(diff))} ({Math.abs(pctv).toFixed(1)}%)
+      {diff > 0 ? "+" : diff < 0 ? "-" : ""}{fmt(Math.abs(diff))} ({!prev && cur ? "New" : `${Math.abs(pctv).toFixed(1)}%`})
     </span>
   );
 }
@@ -48,7 +48,7 @@ export function CategoryDetails({ account, current, previous, currentLabel, prev
                   <td className="py-2.5 pr-4 font-medium">{r.categoryName}</td>
                   <td className="py-2.5 px-3 text-right tabnum">{fmt(r.amount)}</td>
                   <td className="py-2.5 px-3 text-right tabnum text-muted-foreground">{fmt(r.lastMonthAmount)}</td>
-                  <td className="py-2.5 pl-3 text-right"><Variation cur={r.amount} prev={r.lastMonthAmount} /></td>
+                  <td className="py-2.5 pl-3 text-right"><Variation cur={r.amount} prev={r.lastMonthAmount} testid={`overview-category-variation-${slug(r.categoryName)}`} /></td>
                 </tr>
               ))}
             </tbody>
