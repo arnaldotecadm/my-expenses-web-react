@@ -14,6 +14,7 @@ import { StatCard } from "@/components/StatCard";
 import { Panel } from "@/components/Panel";
 import { Loader } from "@/components/Loader";
 import { ChartTooltip } from "@/components/ChartTooltip";
+import { CategoryDetails } from "@/components/CategoryDetails";
 import { INCOME, EXPENSE, colorAt } from "@/lib/colors";
 
 const axis = { fontSize: 11, fill: "hsl(var(--muted-foreground))" };
@@ -112,6 +113,9 @@ export default function Overview() {
             </ResponsiveContainer>
           </div>
         </Panel>
+
+        <CategoryDetails account={account} current={latest?.reference} previous={summary[1]?.reference}
+          currentLabel={latest?.summaryDTO.month || ""} previousLabel={summary[1]?.summaryDTO.month || "—"} />
       </div>
     </>
   );
