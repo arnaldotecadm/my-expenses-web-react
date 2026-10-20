@@ -9,6 +9,7 @@ export const fmt = (v) => nf().format(Number(v) || 0);
 
 export const fmtK = (v) => {
   const sym = nf().formatToParts(0).find((p) => p.type === "currency")?.value || "";
+  if (!v) return `0 ${sym}`;
   return `${(v / 1000).toFixed(Math.abs(v) < 10000 ? 1 : 0).replace(".", ",")}k ${sym}`;
 };
 

@@ -13,8 +13,20 @@ http.interceptors.request.use(async (config) => {
   return config;
 });
 
-http.interceptors.response.use((r) => r, (error) => {
-  if (error.response?.status === 401) signOut();
+http.interceptors.response.use((r) => r, async (error) => {
+  const cfg = error.config;
+  if (error.response?.status === 401 && cfg && !cfg._retried) {
+    cfg._retried = true;
+    try {
+      const { tokens } = await fetchAuthSession({ forceRefresh: true });
+      cfg.headers.Authorization = `Bearer ${tokens?.idToken?.toString()}`;
+      return http(cfg);
+    } catch {
+      signOut();
+    }
+  } else if (error.response?.status === 401) {
+    signOut();
+  }
   return Promise.reject(error);
 });
 
@@ -24,8 +36,8 @@ const abs = (v) => Math.abs(Number(v) || 0);
 // Adapters: normalise the original API's shapes for the UI
 const mergeCharts = (cur = [], prev = []) => {
   const map = {};
-  cur.forEach((c) => { map[c.name] = { categoryName: c.name, amount: c.amount, lastMonthAmount: 0 }; });
-  prev.forEach((c) => { (map[c.name] ||= { categoryName: c.name, amount: 0, lastMonthAmount: 0 }).lastMonthAmount = c.amount; });
+  cur.forEach((c) => { (map[c.name] ||= { categoryName: c.name, amount: 0, lastMonthAmount: 0 }).amount += c.amount; });
+  prev.forEach((c) => { (map[c.name] ||= { categoryName: c.name, amount: 0, lastMonthAmount: 0 }).lastMonthAmount += c.amount; });
   return Object.values(map);
 };
 

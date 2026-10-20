@@ -73,7 +73,7 @@ export default function FourMonthsReview() {
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                   <XAxis dataKey="month" tick={axis} tickLine={false} axisLine={false} />
                   <YAxis tick={axis} tickLine={false} axisLine={false} width={70}
-                    tickFormatter={(v) => fmtK(v, 0)} />
+                    tickFormatter={(v) => fmtK(v)} />
                   <Tooltip content={<ChartTooltip />} cursor={{ fill: "hsl(var(--muted))" }} />
                   <Legend wrapperStyle={{ fontSize: 11 }} iconType="circle" />
                   <Bar dataKey="Income" fill={INCOME} radius={[6, 6, 0, 0]} barSize={32} />

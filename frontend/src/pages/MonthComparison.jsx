@@ -66,7 +66,7 @@ export default function MonthComparison() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={rows} layout="vertical" margin={{ left: 10, right: 8 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
-                  <XAxis type="number" tick={axis} tickLine={false} axisLine={false} tickFormatter={(v) => fmtK(v, 1)} />
+                  <XAxis type="number" tick={axis} tickLine={false} axisLine={false} tickFormatter={(v) => fmtK(v)} />
                   <YAxis type="category" dataKey="name" tick={axis} tickLine={false} axisLine={false} width={100} />
                   <Tooltip content={<ChartTooltip />} cursor={{ fill: "hsl(var(--muted))" }} />
                   <Legend wrapperStyle={{ fontSize: 11 }} iconType="circle" />

@@ -1,0 +1,33 @@
+{
+  "summary": "Frontend-only READ-ONLY retest of the iteration_5 fixes (backend skipped as requested). All 5 requested items pass. (1) Overview > Category Details (Activo Bank, October 2026 vs September 2026): 8 rows, no duplicate test IDs. Car 431,40 € / 633,68 €, Housing 129,53/1082,35, Health 73,95/180,60, Other Expenses 22,18/22,33, Studies 4,46/4,32, Food 1,70/197,09, Salary 0,00/700,00, Transport 0,00/16,42. Total 663,22 € (same as the Expenses KPI) vs 2836,79 € (same as the September Monthly Analysis total). (2) The Month Comparison page defaults to October 2026 vs September 2026 with the same values, and the chart draws 16 bars. Changing source/target to September 2026 vs August 2026 updated the rows (Car 633,68/224,78, Care 0/20,27, Taxes 0/30) and the chart (20 bars). (3) Y-axis ticks have no duplicates and use the '1,5k €' style. BPI Income vs Expenses: 0,0k/0,8k/1,6k/2,4k/3,2k €. BPI Expenses by Category: 0,0k/0,6k/1,1k/1,6k/2,2k €. Activo: 0,0k/0,7k/1,3k/1,9k/2,6k € and 0,0k/3,5k/7,0k/11k/14k €. (4) The Expenses by Category legend has no income categories (Activo: Car, Care, Food, Gifts, Health, Housing, Leisures, Other Expenses, Studies, Transport; BPI has no Salary or Other income). (5) Regression: login works. Switching to BPI shows '392,92 € available' and Expenses 1866,07 €. Distribution (Total 1866,07 €) and Monthly Analysis (October 2026, weekly chart) render. Switching back to Activo Bank and signing out (back to the auth screen) both work. No console errors and no failed /api calls.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Charts (fmtK)", "issues": [
+        "Ticks are rounded to 1 decimal, so the labels can look uneven (e.g. 0,7k / 1,3k / 1,9k for 650 steps; 0,3k for 350). 0 is shown as '0,0k €' instead of '0 €'. Tick count jumps from '7,0k €' to '11k €' (decimals dropped at >=10k). Cosmetic only.",
+        "fmtK(v, 1) / fmtK(v, 0) are called with a second argument that fmtK ignores. This is dead code; either use it or remove it."
+      ]},
+      {"screen": "Month Comparison chart", "issues": ["After changing the selects, the legend order flips (shows 'August 2026' before 'September 2026') because the Bar dataKeys are month labels. The bars keep the right colours, so this is cosmetic. Use fixed dataKeys ('source'/'target') with a name prop instead."]}
+    ]
+  },
+  "test_report_links": [],
+  "action_items": [
+    "Optional/cosmetic: make fmtK show '0 €' for zero and use the second argument it is called with (or drop it)",
+    "Optional/cosmetic: use fixed Bar dataKeys on Month Comparison so the legend order stays stable"
+  ],
+  "critical_code_review_comments": [
+    "api.js comparison: mergeCharts keys by category name. Two subcategory-less rows with a null name both become 'Uncategorized' (from expenseChart), and in mergeCharts the later one overwrites the earlier instead of adding. This is an edge case; consider summing on name collisions.",
+    "api.js summaryPerCategory keeps a category if its net over 6 months is negative, then the chart shows Math.abs per month. A month with net income in a mostly-expense category would be drawn as positive spend. Consider using Math.max(0, -valor).",
+    "Category Details and Month Comparison show rows such as 'Salary' (Activo, September) and 'Other income' (BPI, October) because category/chart returns them with negative amounts. These are expenses booked to income-named categories and they add up to the KPI, so the figures are consistent. Just noting it as a data quirk.",
+    "From iteration_5, still open: the 401 interceptor signs the user out on any 401 without first trying a forced token refresh."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "skipped (frontend only)", "frontend": "100% (5/5 requested items pass)"},
+  "test_credentials": "arnaldotecadm@hotmail.com / ADMINar98 (from /app/memory/test_credentials.md) - works",
+  "seed_data_creation": "None. Read-only.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "REAL production data, read-only. Login uses Amplify Authenticator: input[name=username], input[name=password], button[type=submit]. Account options: account-option-activo-bank and account-option-bpi. Recharts tick text: select 'svg.recharts-surface text' (the .recharts-cartesian-axis-tick-value class returned nothing). Expected October 2026 values: Activo Expenses 663,22 €, Car 431,40 €; BPI Expenses 1866,07 €, balance 392,92 €."
+}
