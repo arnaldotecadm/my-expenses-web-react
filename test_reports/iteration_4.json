@@ -1,0 +1,32 @@
+{
+  "summary": "Tested the 4 new features on the backend and frontend; all 7 requested checks passed. (1) The brand-home-link goes to / from /settings on desktop, and from the mobile drawer on /tags; the drawer closes. (2) On the calendar, clicking the planning-calendar-paid-<uuid> circle marked the bill paid without opening the dialog. The chip turned green and the stats updated (Paid +77,50, Not paid -77,50). Clicking again set it back to unpaid and restored the stats. (3) In the edit dialog, planning-mark-paid-button shows only for unpaid bills; it is hidden for paid bills and for new events. Clicking it saved payed=true, amountPayed=88 (confirmed via API) and closed the dialog. (4) Dragging a chip with Playwright drag_and_drop from day 7 to day 22 moved it there. The move persisted after reload and the list view shows day 22. (5) All 8 Settings stat cards match GET /api/statistics/user/records exactly. (6) Wipe: Confirm is disabled at first and when 'delete' is typed, and enabled only for 'DELETE'. Cancel closes the dialog with nothing deleted. Confirming deleted everything: stats are all 0, the sidebar shows 'Select account', and /, /transactions and /planning show no-data-state with no-data-import-link -> /import-export. Data stayed empty after restarting the backend. (7) After the wipe, importing a JSON file created the account; Overview and Transactions show data and Settings shows 2 transactions / 1 account. Backend pytest: 20/20 before the wipe, plus 3 new tests that passed after the restore. No page errors. Demo data restored (Main Account + Savings, 7 plannings).",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "GET /api/statistics/user/records?account=<uuid>", "issue": "Scopes are mixed: transactions, income, expense, categories and tags are counted for the selected account, but totalAccounts, totalBudgets and totalPlannings are global counts. The Settings page does not say which numbers depend on the account."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Settings", "issues": ["The stat cards do not show which account they refer to, even though some counts depend on the selected account."]}
+    ]
+  },
+  "test_report_links": ["/app/backend/tests/test_iter4_features.py", "/app/backend/tests/test_expenses_api.py", "/app/test_reports/pytest/pytest_iter4.xml"],
+  "action_items": [
+    "Optional: make the stats scope consistent (filter budgets and plannings by account, or label the cards 'all accounts' vs 'this account')",
+    "Optional: test_expenses_api.py leaves TEST_Imported and TEST_NoDate accounts after each run (4 of them existed before the wipe). Add teardown cleanup."
+  ],
+  "critical_code_review_comments": [
+    "The 'wiped' flag in meta stays set forever, so the demo data can never be seeded again from the UI. This is intended per the user's choice, but nothing documents it.",
+    "Dropping a chip on its own day is ignored (a correct no-op). There is no touch fallback for drag-and-drop on mobile, because HTML5 DnD does not work on touch devices.",
+    "If the onMove/onTogglePaid save fails, the toast says 'Something went wrong' but no optimistic update is rolled back. This is fine because there is no optimistic update."
+  ],
+  "updated_files": ["/app/backend/tests/test_iter4_features.py"],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "seed_data_creation": "Created TEST_Chip, TEST_Dlg and TEST_Drag planning events and a TEST_Wiped Import account. All were removed by the wipe and the demo data was re-seeded via meta/collections cleanup + backend restart. GET /api/account returns Main Account and Savings; there are no TEST_ records.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Browser/system date is Oct 20 2026. Demo data was re-seeded (new uuids: Main Account f6b9f092..., Savings 261525ce...). To restore after a wipe, delete the meta, accounts, transactions, budgets and plannings collections, then restart the backend."
+}

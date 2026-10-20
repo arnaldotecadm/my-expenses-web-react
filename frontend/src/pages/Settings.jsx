@@ -16,12 +16,12 @@ import {
 } from "@/components/ui/alert-dialog";
 
 const CARDS = [
-  ["totalTransactions", "Transactions", Receipt],
-  ["totalAccounts", "Accounts", Wallet2],
-  ["totalPlannings", "Planned events", Calendar],
-  ["totalBudgets", "Budgets", PiggyBank],
-  ["totalCategories", "Categories", Layers],
-  ["totalTags", "Tags", Tag],
+  ["totalTransactions", "Transactions", Receipt, "Selected account"],
+  ["totalAccounts", "Accounts", Wallet2, "All accounts"],
+  ["totalPlannings", "Planned events", Calendar, "All accounts"],
+  ["totalBudgets", "Budgets", PiggyBank, "All accounts"],
+  ["totalCategories", "Categories", Layers, "Selected account"],
+  ["totalTags", "Tags", Tag, "Selected account"],
 ];
 
 function WipeData() {
@@ -77,11 +77,11 @@ export default function Settings() {
       {isLoading ? <Loader /> : (
         <div className="space-y-6">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {CARDS.map(([k, label, Icon], i) => (
-              <StatCard key={k} testid={`settings-stat-${k}`} label={label} value={String(data?.[k] ?? 0)} icon={Icon} delay={i * 0.04} />
+            {CARDS.map(([k, label, Icon, hint], i) => (
+              <StatCard key={k} testid={`settings-stat-${k}`} label={label} value={String(data?.[k] ?? 0)} icon={Icon} delay={i * 0.04} hint={hint} />
             ))}
-            <StatCard testid="settings-stat-totalIncome" label="Total income" value={data?.totalIncome || 0} icon={TrendingUp} tone="income" />
-            <StatCard testid="settings-stat-totalExpense" label="Total expenses" value={data?.totalExpense || 0} icon={TrendingDown} tone="expense" />
+            <StatCard testid="settings-stat-totalIncome" label="Total income" value={data?.totalIncome || 0} icon={TrendingUp} tone="income" hint="Selected account" />
+            <StatCard testid="settings-stat-totalExpense" label="Total expenses" value={data?.totalExpense || 0} icon={TrendingDown} tone="expense" hint="Selected account" />
           </div>
           <WipeData />
         </div>
