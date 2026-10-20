@@ -1,5 +1,6 @@
 import axios from "axios";
 import { fetchAuthSession, signOut } from "aws-amplify/auth";
+import { queryClient } from "@/lib/queryClient";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 export const API = `${BACKEND_URL}/api`;
@@ -13,20 +14,35 @@ http.interceptors.request.use(async (config) => {
   return config;
 });
 
+let redirecting = false;
+const redirectToLogin = async () => {
+  if (redirecting) return;
+  redirecting = true;
+  queryClient.clear();
+  try {
+    await signOut();
+  } finally {
+    window.location.replace("/");
+  }
+};
+
 http.interceptors.response.use((r) => r, async (error) => {
   const cfg = error.config;
-  if (error.response?.status === 401 && cfg && !cfg._retried) {
+  if (error.response?.status !== 401) return Promise.reject(error);
+  if (cfg && !cfg._retried) {
     cfg._retried = true;
     try {
       const { tokens } = await fetchAuthSession({ forceRefresh: true });
-      cfg.headers.Authorization = `Bearer ${tokens?.idToken?.toString()}`;
-      return http(cfg);
+      const idToken = tokens?.idToken?.toString();
+      if (idToken) {
+        cfg.headers.Authorization = `Bearer ${idToken}`;
+        return http(cfg);
+      }
     } catch {
-      signOut();
+      // refresh failed, fall through to login
     }
-  } else if (error.response?.status === 401) {
-    signOut();
   }
+  redirectToLogin();
   return Promise.reject(error);
 });
 
