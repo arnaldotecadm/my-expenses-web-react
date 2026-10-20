@@ -13,6 +13,10 @@ import { MonthYearPicker } from "@/components/MonthYearPicker";
 import { PlanningDialog } from "@/components/PlanningDialog";
 import { PlanningCalendar } from "@/components/PlanningCalendar";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
+  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const pad = (n) => String(n).padStart(2, "0");
 
@@ -24,6 +28,7 @@ export default function Planning() {
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [dialog, setDialog] = useState({ open: false, item: null });
   const [view, setView] = useState("calendar");
+  const [toDelete, setToDelete] = useState(null);
   const ym = `${year}-${pad(month)}`;
 
   const { data: all = [], isLoading } = useQuery({ queryKey: ["plannings", account], queryFn: () => api.plannings(account), enabled: !!account });
@@ -94,7 +99,7 @@ export default function Planning() {
                 </div>
                 <span className="text-sm font-semibold tabnum">{fmt(p.amount)}</span>
                 <button onClick={() => setDialog({ open: true, item: p })} data-testid={`planning-edit-${p.uuid}`} className="rounded-lg p-1.5 hover:bg-secondary"><Pencil className="h-4 w-4" /></button>
-                <button onClick={() => del.mutate(p.uuid)} data-testid={`planning-delete-${p.uuid}`} className="rounded-lg p-1.5 text-red-500 hover:bg-red-500/10"><Trash2 className="h-4 w-4" /></button>
+                <button onClick={() => setToDelete(p)} data-testid={`planning-delete-${p.uuid}`} className="rounded-lg p-1.5 text-red-500 hover:bg-red-500/10"><Trash2 className="h-4 w-4" /></button>
               </div>
             ))}
           </div>
@@ -102,7 +107,25 @@ export default function Planning() {
       </Panel>
 
       <PlanningDialog open={dialog.open} initial={dialog.item} defaultDate={dialog.date || `${ym}-01`} saving={save.isPending}
-        onOpenChange={(o) => setDialog({ open: o, item: o ? dialog.item : null })} onSave={onSave} />
+        onOpenChange={(o) => setDialog({ open: o, item: o ? dialog.item : null })} onSave={onSave} onDelete={setToDelete} />
+
+      <AlertDialog open={!!toDelete} onOpenChange={(o) => !o && setToDelete(null)}>
+        <AlertDialogContent data-testid="planning-delete-dialog">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this event?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <b>{toDelete?.item}</b> ({fmt(toDelete?.amount)}, due {toDelete?.date})? This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="planning-delete-cancel">Cancel</AlertDialogCancel>
+            <AlertDialogAction data-testid="planning-delete-confirm" disabled={del.isPending} className="bg-red-600 text-white hover:bg-red-700"
+              onClick={() => del.mutate(toDelete.uuid, { onSuccess: () => { setToDelete(null); setDialog({ open: false, item: null }); } })}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

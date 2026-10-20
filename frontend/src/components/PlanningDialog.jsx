@@ -4,11 +4,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Trash2 } from "lucide-react";
 
 const EMPTY = { item: "", amount: "", date: "", payed: false, amountPayed: "" };
 
-export function PlanningDialog({ open, onOpenChange, initial, defaultDate, onSave, saving }) {
+export function PlanningDialog({ open, onOpenChange, initial, defaultDate, onSave, onDelete, saving }) {
   const [f, setF] = useState(EMPTY);
   useEffect(() => {
     if (open) setF(initial ? { ...initial } : { ...EMPTY, date: defaultDate });
@@ -33,7 +33,7 @@ export function PlanningDialog({ open, onOpenChange, initial, defaultDate, onSav
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label>Amount (R$)</Label>
+              <Label>Amount</Label>
               <Input data-testid="planning-amount-input" type="number" step="0.01" min="0" value={f.amount} onChange={set("amount")} />
             </div>
             <div className="space-y-1.5">
@@ -47,11 +47,18 @@ export function PlanningDialog({ open, onOpenChange, initial, defaultDate, onSav
           </label>
           {f.payed && (
             <div className="space-y-1.5">
-              <Label>Amount paid (R$)</Label>
+              <Label>Amount paid</Label>
               <Input data-testid="planning-amount-payed-input" type="number" step="0.01" min="0" value={f.amountPayed} onChange={set("amountPayed")} placeholder={String(f.amount || "")} />
             </div>
           )}
           <DialogFooter className="gap-2">
+            {initial && (
+              <Button type="button" variant="outline" disabled={saving} data-testid="planning-delete-button"
+                className="border-red-500/40 text-red-600 hover:bg-red-500/10 dark:text-red-400"
+                onClick={() => onDelete(initial)}>
+                <Trash2 className="mr-1.5 h-4 w-4" /> Delete
+              </Button>
+            )}
             {initial && !initial.payed && (
               <Button type="button" variant="outline" disabled={!valid || saving} data-testid="planning-mark-paid-button"
                 className="sm:mr-auto border-emerald-500/40 text-emerald-700 hover:bg-emerald-500/10 dark:text-emerald-300"
