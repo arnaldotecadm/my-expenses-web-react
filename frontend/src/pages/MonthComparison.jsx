@@ -6,7 +6,7 @@ import {
 } from "recharts";
 import { api } from "@/lib/api";
 import { useAccountUuid } from "@/context/AccountContext";
-import { fmt, MONTHS } from "@/lib/format";
+import { fmt, fmtK, MONTHS } from "@/lib/format";
 import { PageHeader } from "@/components/PageHeader";
 import { Panel } from "@/components/Panel";
 import { Loader, EmptyState } from "@/components/Loader";
@@ -66,7 +66,7 @@ export default function MonthComparison() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={rows} layout="vertical" margin={{ left: 10, right: 8 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
-                  <XAxis type="number" tick={axis} tickLine={false} axisLine={false} tickFormatter={(v) => "R$" + (v / 1000).toFixed(1) + "k"} />
+                  <XAxis type="number" tick={axis} tickLine={false} axisLine={false} tickFormatter={(v) => fmtK(v, 1)} />
                   <YAxis type="category" dataKey="name" tick={axis} tickLine={false} axisLine={false} width={100} />
                   <Tooltip content={<ChartTooltip />} cursor={{ fill: "hsl(var(--muted))" }} />
                   <Legend wrapperStyle={{ fontSize: 11 }} iconType="circle" />

@@ -5,7 +5,7 @@ import {
 } from "recharts";
 import { api } from "@/lib/api";
 import { useAccountUuid } from "@/context/AccountContext";
-import { fmt } from "@/lib/format";
+import { fmt, fmtK } from "@/lib/format";
 import { PageHeader } from "@/components/PageHeader";
 import { Panel } from "@/components/Panel";
 import { Loader, EmptyState } from "@/components/Loader";
@@ -73,7 +73,7 @@ export default function FourMonthsReview() {
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                   <XAxis dataKey="month" tick={axis} tickLine={false} axisLine={false} />
                   <YAxis tick={axis} tickLine={false} axisLine={false} width={70}
-                    tickFormatter={(v) => "R$" + (v / 1000).toFixed(0) + "k"} />
+                    tickFormatter={(v) => fmtK(v, 0)} />
                   <Tooltip content={<ChartTooltip />} cursor={{ fill: "hsl(var(--muted))" }} />
                   <Legend wrapperStyle={{ fontSize: 11 }} iconType="circle" />
                   <Bar dataKey="Income" fill={INCOME} radius={[6, 6, 0, 0]} barSize={32} />

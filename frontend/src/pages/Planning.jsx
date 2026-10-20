@@ -34,8 +34,8 @@ export default function Planning() {
 
   const refresh = () => qc.invalidateQueries({ queryKey: ["plannings"] });
   const run = (fn, ok) => ({ mutationFn: fn, onSuccess: (r) => { refresh(); toast.success(ok || r?.message || "Done"); }, onError: () => toast.error("Something went wrong") });
-  const save = useMutation(run((b) => api.savePlanning(b), "Event saved"));
-  const del = useMutation(run((id) => api.deletePlanning(id), "Event deleted"));
+  const save = useMutation(run((b) => api.savePlanning(b, account), "Event saved"));
+  const del = useMutation(run((id) => api.deletePlanning(id, account), "Event deleted"));
   const copy = useMutation(run(() => api.copyOver(ym, account)));
   const clean = useMutation(run(() => api.cleanUp(ym, account)));
 

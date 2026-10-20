@@ -4,8 +4,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, Receipt, PieChart, TrendingUp, LineChart, BarChart2,
   GitCompare, Users, Tag, Calendar,
-  FileSpreadsheet, Settings, Database, Moon, Sun, Menu, X, ChevronDown, Check, Wallet2,
+  FileSpreadsheet, Settings, Database, Moon, Sun, Menu, X, ChevronDown, Check, Wallet2, LogOut,
 } from "lucide-react";
+import { useAuthenticator } from "@aws-amplify/ui-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAccount } from "@/context/AccountContext";
 import { fmt } from "@/lib/format";
 import {
@@ -46,7 +48,7 @@ function AccountSwitcher() {
               {selected?.label || "Select account"}
             </span>
             <span className="block truncate text-xs text-muted-foreground tabnum">
-              {selected ? fmt(selected.openingBalance) + " opening" : "—"}
+              {selected ? fmt(selected.availableAmount ?? selected.openingBalance) + " available" : "—"}
             </span>
           </span>
           <ChevronDown className="h-4 w-4 text-muted-foreground" />
@@ -100,7 +102,7 @@ function Brand({ onNavigate }) {
   return (
     <NavLink to="/" onClick={onNavigate} data-testid="brand-home-link" className="flex items-center gap-2.5 px-5 py-5 transition-opacity hover:opacity-80">
       <span className="grid h-9 w-9 place-items-center rounded-xl bg-accent text-accent-foreground font-bold">
-        R$
+        ME
       </span>
       <div className="leading-tight">
         <div className="font-bold tracking-tight text-[15px]" style={{ fontFamily: "var(--font-heading)" }}>
@@ -109,6 +111,22 @@ function Brand({ onNavigate }) {
         <div className="text-[11px] text-muted-foreground">Personal finance</div>
       </div>
     </NavLink>
+  );
+}
+
+function UserFooter() {
+  const { user, signOut } = useAuthenticator((c) => [c.user]);
+  const qc = useQueryClient();
+  const email = user?.signInDetails?.loginId || user?.username;
+  return (
+    <div className="flex items-center gap-2 border-t border-border p-3">
+      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-accent/15 text-xs font-bold uppercase text-accent">{email?.[0]}</span>
+      <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground" data-testid="sidebar-user-email">{email}</span>
+      <button data-testid="sidebar-sign-out" onClick={() => { qc.clear(); signOut(); }} aria-label="Sign out" title="Sign out"
+        className="grid h-8 w-8 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-red-500/10 hover:text-red-500">
+        <LogOut className="h-4 w-4" />
+      </button>
+    </div>
   );
 }
 
@@ -147,9 +165,7 @@ export function AppLayout({ children }) {
         <Brand />
         <div className="px-3 pb-3"><AccountSwitcher /></div>
         <NavItems />
-        <div className="border-t border-border p-3 text-[11px] text-muted-foreground">
-          Arnaldo C. Bezerra®
-        </div>
+        <UserFooter />
       </aside>
 
       {/* Mobile drawer */}
@@ -174,6 +190,7 @@ export function AppLayout({ children }) {
               </div>
               <div className="px-3 pb-3"><AccountSwitcher /></div>
               <NavItems onNavigate={() => setMobileOpen(false)} />
+              <UserFooter />
             </motion.aside>
           </>
         )}

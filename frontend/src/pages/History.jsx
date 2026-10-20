@@ -3,6 +3,7 @@ import { TrendingUp } from "lucide-react";
 import {
   ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
 } from "recharts";
+import { fmtK } from "@/lib/format";
 import { api } from "@/lib/api";
 import { useAccountUuid } from "@/context/AccountContext";
 import { PageHeader } from "@/components/PageHeader";
@@ -38,7 +39,7 @@ export default function History() {
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                 <XAxis dataKey="month" tick={axis} tickLine={false} axisLine={false} />
                 <YAxis tick={axis} tickLine={false} axisLine={false} width={70}
-                  tickFormatter={(v) => "R$" + (v / 1000).toFixed(0) + "k"} />
+                  tickFormatter={(v) => fmtK(v, 0)} />
                 <Tooltip content={<ChartTooltip />} cursor={{ fill: "hsl(var(--muted))" }} />
                 <Legend wrapperStyle={{ fontSize: 11 }} iconType="circle" />
                 <Bar dataKey="Income" fill={INCOME} radius={[4, 4, 0, 0]} barSize={18} />

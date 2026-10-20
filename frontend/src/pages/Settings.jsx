@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Settings as SettingsIcon, Receipt, Wallet2, Calendar, Layers, Tag, PiggyBank, TrendingUp, TrendingDown, Trash2 } from "lucide-react";
+import { Settings as SettingsIcon, Database, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
-import { useAccountUuid } from "@/context/AccountContext";
 import { PageHeader } from "@/components/PageHeader";
 import { Panel } from "@/components/Panel";
 import { StatCard } from "@/components/StatCard";
@@ -15,16 +14,7 @@ import {
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-const CARDS = [
-  ["totalTransactions", "Transactions", Receipt, "Selected account"],
-  ["totalAccounts", "Accounts", Wallet2, "All accounts"],
-  ["totalPlannings", "Planned events", Calendar, "All accounts"],
-  ["totalBudgets", "Budgets", PiggyBank, "All accounts"],
-  ["totalCategories", "Categories", Layers, "Selected account"],
-  ["totalTags", "Tags", Tag, "Selected account"],
-];
-
-function WipeData() {
+function WipeData({ label }) {
   const qc = useQueryClient();
   const [confirm, setConfirm] = useState("");
   const [busy, setBusy] = useState(false);
@@ -32,7 +22,7 @@ function WipeData() {
     setBusy(true);
     try {
       await api.deleteAll();
-      toast.success("All data deleted");
+      toast.success("All transactions deleted");
       qc.invalidateQueries();
     } catch {
       toast.error("Could not delete data");
@@ -42,17 +32,17 @@ function WipeData() {
     }
   };
   return (
-    <Panel title="Danger zone" subtitle="Permanently delete all accounts, transactions, budgets and planned events">
+    <Panel title="Danger zone" subtitle="Permanently delete all your transactions">
       <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-red-500/30 bg-red-500/5 p-4">
         <p className="text-sm text-muted-foreground">This cannot be undone. The app will be left empty until you import new data.</p>
         <AlertDialog onOpenChange={() => setConfirm("")}>
           <AlertDialogTrigger asChild>
-            <Button variant="destructive" data-testid="settings-wipe-button"><Trash2 className="mr-1.5 h-4 w-4" /> Delete all data</Button>
+            <Button variant="destructive" data-testid="settings-wipe-button"><Trash2 className="mr-1.5 h-4 w-4" /> {label}</Button>
           </AlertDialogTrigger>
           <AlertDialogContent data-testid="settings-wipe-dialog">
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete all data?</AlertDialogTitle>
-              <AlertDialogDescription>Type <b>DELETE</b> to confirm. Every record will be removed permanently.</AlertDialogDescription>
+              <AlertDialogTitle>Delete all transactions?</AlertDialogTitle>
+              <AlertDialogDescription>Type <b>DELETE</b> to confirm. Every transaction will be removed permanently.</AlertDialogDescription>
             </AlertDialogHeader>
             <Input data-testid="settings-wipe-confirm-input" value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="DELETE" />
             <AlertDialogFooter>
@@ -68,8 +58,8 @@ function WipeData() {
 }
 
 export default function Settings() {
-  const account = useAccountUuid();
-  const { data, isLoading } = useQuery({ queryKey: ["stats", account], queryFn: () => api.stats(account || "all") });
+  const { data = [], isLoading } = useQuery({ queryKey: ["stats"], queryFn: api.stats });
+  const tx = data.find((e) => e.entryType === "TRANSACTIONS");
 
   return (
     <>
@@ -77,13 +67,12 @@ export default function Settings() {
       {isLoading ? <Loader /> : (
         <div className="space-y-6">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {CARDS.map(([k, label, Icon, hint], i) => (
-              <StatCard key={k} testid={`settings-stat-${k}`} label={label} value={String(data?.[k] ?? 0)} icon={Icon} delay={i * 0.04} hint={hint} />
+            {data.map((e, i) => (
+              <StatCard key={e.entryType} testid={`settings-stat-${e.entryType.toLowerCase()}`} label={e.labelEntry}
+                value={String(Math.round(e.qty))} icon={Database} delay={i * 0.04} hint="All accounts" />
             ))}
-            <StatCard testid="settings-stat-totalIncome" label="Total income" value={data?.totalIncome || 0} icon={TrendingUp} tone="income" hint="Selected account" />
-            <StatCard testid="settings-stat-totalExpense" label="Total expenses" value={data?.totalExpense || 0} icon={TrendingDown} tone="expense" hint="Selected account" />
           </div>
-          <WipeData />
+          <WipeData label={tx?.labelButton || "Delete all transactions"} />
         </div>
       )}
     </>

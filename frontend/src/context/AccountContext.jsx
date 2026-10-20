@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
+import { setCurrency } from "@/lib/format";
 
 const AccountCtx = createContext(null);
 
@@ -18,6 +19,8 @@ export function AccountProvider({ children }) {
     if (!fresh) setSelected(accounts[0]);
     else if (fresh !== selected) setSelected(fresh);
   }, [accounts, selected, isLoading]);
+
+  setCurrency(selected?.currency);
 
   return (
     <AccountCtx.Provider value={{ accounts, selected, setSelected, isLoading }}>

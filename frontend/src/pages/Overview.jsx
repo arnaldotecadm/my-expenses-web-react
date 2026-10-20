@@ -8,7 +8,7 @@ import {
 } from "recharts";
 import { api } from "@/lib/api";
 import { useAccountUuid } from "@/context/AccountContext";
-import { fmt } from "@/lib/format";
+import { fmt, fmtK } from "@/lib/format";
 import { PageHeader } from "@/components/PageHeader";
 import { StatCard } from "@/components/StatCard";
 import { Panel } from "@/components/Panel";
@@ -40,8 +40,8 @@ export default function Overview() {
   const expenses = latest?.transactionList?.filter((t) => t.amount < 0) || [];
   const lastExpense = expenses[expenses.length - 1];
 
-  const history = [...summary].reverse().map((m) => ({
-    month: m.summaryDTO.month.split(" ")[0],
+  const history = summary.slice(0, 12).reverse().map((m) => ({
+    month: m.summaryDTO.month.split(" ").pop().slice(0, 3),
     Income: m.summaryDTO.income,
     Expenses: Math.abs(m.summaryDTO.expense),
   }));
@@ -85,7 +85,7 @@ export default function Overview() {
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                 <XAxis dataKey="nome" tick={axis} tickLine={false} axisLine={false} />
                 <YAxis tick={axis} tickLine={false} axisLine={false} width={64}
-                  tickFormatter={(v) => "R$" + (v / 1000).toFixed(1) + "k"} />
+                  tickFormatter={(v) => fmtK(v, 1)} />
                 <Tooltip content={<ChartTooltip />} />
                 <Legend wrapperStyle={{ fontSize: 11 }} iconType="circle" />
                 {perCat.map((c, i) => (
@@ -104,7 +104,7 @@ export default function Overview() {
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                 <XAxis dataKey="month" tick={axis} tickLine={false} axisLine={false} />
                 <YAxis tick={axis} tickLine={false} axisLine={false} width={64}
-                  tickFormatter={(v) => "R$" + (v / 1000).toFixed(0) + "k"} />
+                  tickFormatter={(v) => fmtK(v, 0)} />
                 <Tooltip content={<ChartTooltip />} cursor={{ fill: "hsl(var(--muted))" }} />
                 <Legend wrapperStyle={{ fontSize: 11 }} iconType="circle" />
                 <Bar dataKey="Income" fill={INCOME} radius={[4, 4, 0, 0]} />

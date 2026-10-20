@@ -29,7 +29,7 @@ function ExportPanel() {
     const txs = groups.flatMap((g) => g.transactionList);
     const base = (selected?.label || "account").replace(/\s+/g, "-").toLowerCase();
     if (kind === "json") {
-      download(`${base}.json`, JSON.stringify({ label: selected?.label, currency: "BRL", openingBalance: selected?.openingBalance, transactions: txs }, null, 2), "application/json");
+      download(`${base}.json`, JSON.stringify({ label: selected?.label, currency: selected?.currency || "BRL", openingBalance: selected?.openingBalance, transactions: txs }, null, 2), "application/json");
     } else {
       const head = "date,payee,category,subCategory,amount,tags";
       const rows = txs.map((t) => [t.date, t.payee, t.category, t.subCategory, t.amount, (t.tags || []).join("|")].map((v) => `"${String(v ?? "").replace(/"/g, '""')}"`).join(","));
@@ -64,8 +64,8 @@ export default function ImportExport() {
     e.target.value = "";
     try {
       const data = await api.parseFile(file.name, await file.text());
-      if (!data.transactions?.length) toast.error("No transactions found in file");
-      setParsed({ ...data, label: data.label || file.name.replace(/\.[^.]+$/, "") });
+      if (!data?.transactions?.length) toast.error("No transactions found in file");
+      setParsed({ ...data, transactions: data?.transactions || [], label: data?.label || file.name.replace(/\.[^.]+$/, "") });
     } catch {
       toast.error("Could not read this file");
     }
@@ -75,7 +75,7 @@ export default function ImportExport() {
     setSaving(true);
     try {
       const r = await api.saveBatch(parsed);
-      r.skipped ? toast.warning(r.message) : toast.success(r.message);
+      toast.success(r?.message || `Imported ${parsed.transactions.length} transactions`);
       setParsed(null);
       qc.invalidateQueries();
     } catch {

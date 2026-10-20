@@ -6,7 +6,7 @@ import {
 } from "recharts";
 import { api } from "@/lib/api";
 import { useAccountUuid } from "@/context/AccountContext";
-import { fmt } from "@/lib/format";
+import { fmt, fmtK } from "@/lib/format";
 import { PageHeader } from "@/components/PageHeader";
 import { Panel } from "@/components/Panel";
 import { StatCard } from "@/components/StatCard";
@@ -25,7 +25,7 @@ export default function MonthlyAnalysis() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["month-analysis", account, year, month],
-    queryFn: () => api.monthAnalysis(year, month, account),
+    queryFn: () => api.currentMonthByYM(year, month, account),
     enabled: !!account,
   });
 
@@ -60,7 +60,7 @@ export default function MonthlyAnalysis() {
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                     <XAxis dataKey="week" tick={axis} tickLine={false} axisLine={false} />
                     <YAxis tick={axis} tickLine={false} axisLine={false} width={70}
-                      tickFormatter={(v) => "R$" + (v / 1000).toFixed(1) + "k"} />
+                      tickFormatter={(v) => fmtK(v, 1)} />
                     <Tooltip content={<ChartTooltip />} cursor={{ fill: "hsl(var(--muted))" }} />
                     <Legend wrapperStyle={{ fontSize: 11 }} iconType="circle" />
                     <Bar dataKey="Income" fill={INCOME} radius={[6, 6, 0, 0]} barSize={28} />

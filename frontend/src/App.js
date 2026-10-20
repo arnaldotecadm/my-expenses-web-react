@@ -1,7 +1,10 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Authenticator, useAuthenticator } from "@aws-amplify/ui-react";
 import { Toaster } from "@/components/ui/sonner";
 import { AccountProvider } from "@/context/AccountContext";
 import { AppLayout } from "@/components/AppLayout";
+import { AuthScreen } from "@/components/AuthScreen";
+import { Loader } from "@/components/Loader";
 
 import Overview from "@/pages/Overview";
 import Transactions from "@/pages/Transactions";
@@ -16,7 +19,7 @@ import Planning from "@/pages/Planning";
 import ImportExport from "@/pages/ImportExport";
 import Settings from "@/pages/Settings";
 
-function App() {
+function MainApp() {
   return (
     <AccountProvider>
       <BrowserRouter>
@@ -37,8 +40,22 @@ function App() {
           </Routes>
         </AppLayout>
       </BrowserRouter>
-      <Toaster position="bottom-right" richColors />
     </AccountProvider>
+  );
+}
+
+function AuthGate() {
+  const { authStatus } = useAuthenticator((c) => [c.authStatus]);
+  if (authStatus === "configuring") return <div className="grid min-h-screen place-items-center"><Loader /></div>;
+  return authStatus === "authenticated" ? <MainApp /> : <AuthScreen />;
+}
+
+function App() {
+  return (
+    <Authenticator.Provider>
+      <AuthGate />
+      <Toaster position="bottom-right" richColors />
+    </Authenticator.Provider>
   );
 }
 
