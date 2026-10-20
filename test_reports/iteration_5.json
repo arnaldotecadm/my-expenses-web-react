@@ -1,0 +1,39 @@
+{
+  "summary": "READ-ONLY e2e test of Cognito/Amplify sign-in + JWT gateway proxying to the real upstream API. Backend: 18/18 pytest pass (health public; /api/account and /api/me 401 with no/invalid/tampered token; access token rejected (ID token required); DELETE without token rejected with 401 before reaching upstream; /api/me returns sub+email; /api/account returns Activo Bank (EUR, 7176.44) + BPI; ?account=<uuid> forwarded as selectedAccount (yearMonth lists differ per account); all main read endpoints 200; statistics qty 3612). Frontend: auth screen with Sign In / Create Account tabs + Forgot password, no app data shown before login; login works; reload keeps session; sidebar email + sign out -> auth screen -> re-login reloads data; switcher shows '7176,44 € available'; all 12 pages render real data with 0 console errors and 0 failed API calls; Distribution drill-down (Car -> Buying/Toll) + back works; Monthly Analysis month picker (Sep -> 2836,79 €, positive weekly values); Planning shows 'teste' 45 € on Oct 19; Settings shows 3612; switching to BPI reloads (392,92 €, overview expenses 1866,07 €). One data-correctness issue found in Category Details / Month Comparison.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "catch-all proxy /api/{path}", "issue": "Proxy does not forward PATCH/OPTIONS and drops upstream response headers (e.g. Content-Disposition). OK for current UI, just noting."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {"flow": "Overview > Category Details and Month Comparison page (api.comparison -> mergeComparison in lib/api.js)", "issue": "Upstream /analise/month-analysis-comparison/2026-10/2026-09 returns TWO rows per category (e.g. Car 633.68 and Car 431.40). mergeComparison sums them, so 'Current month' Car shows 1065,08 € while the real October Car spend (Distribution, category/chart) is 431,40 € and October expense KPI is 663,22 €; the table 'Total' says 3500,01 € vs KPI 663,22 €. The 633.68 row is actually September's Car amount (matches the Expenses-by-Category chart for 2026-09), so summing double-counts months. Also income rows are not filtered: 'Salary' appears in the table/chart and is added into Total (for 2026-09 vs 2026-08 'Salary' isExpense=false and 'Other income' would also show). The original Angular app rendered rows as-is (no merge). Needs a correct dedupe rule (e.g. pick the row matching the selected month, or verify upstream semantics) and filter isExpense===false / income categories.", "affected_selectors": ["Category Details table on Overview", "[data-testid=comparison-chart]", "[data-testid^=comparison-row-]"]}
+    ],
+    "design_issues": [
+      {"screen": "Overview (BPI account) Income vs Expenses chart", "issues": ["Y-axis tick formatter rounds to whole k and produces duplicate labels (€3k, €2k, €2k). Use one decimal for small ranges like the other chart (€0.6k)."]},
+      {"screen": "Charts in general", "issues": ["Axis labels use '€0.7k' style while all other amounts use pt-PT '7176,44 €' style - minor inconsistency."]}
+    ]
+  },
+  "test_report_links": ["/app/backend/tests/test_gateway_auth.py", "/app/test_reports/pytest/pytest_results.xml"],
+  "action_items": [
+    "Fix mergeComparison (lib/api.js): do not sum the duplicate per-category rows returned by month-analysis-comparison (they mix months -> inflated 'current month' values, e.g. Car 1065,08 € vs real 431,40 €; Total 3500,01 € vs KPI 663,22 €). Verify upstream semantics and pick the correct row",
+    "Filter income rows (isExpense === false, Salary/Other income) out of Category Details and Month Comparison, or show them separately and exclude from Total",
+    "Fix duplicate Y-axis tick labels in Income vs Expenses chart for small ranges"
+  ],
+  "critical_code_review_comments": [
+    "server.py: JWT verification is solid (RS256, aud=client id, iss, exp, token_use=id). PyJWKClient.get_signing_key_from_jwt is synchronous (network fetch on cache miss) inside a sync dependency - fine since FastAPI runs sync deps in threadpool.",
+    "server.py proxy: forwards DELETE /statistics/user/records with any valid token - dangerous endpoint relies only on the UI confirm dialog; acceptable but be aware.",
+    "api.js: 401 interceptor calls signOut() on any 401 (including upstream 401s) - could log the user out on an upstream glitch; consider retrying with a refreshed token (fetchAuthSession({forceRefresh:true})) first.",
+    "mergeComparison: summing duplicates is the root cause of the inflated comparison values."
+  ],
+  "updated_files": ["/app/backend/tests/test_gateway_auth.py"],
+  "success_rate": {"backend": "100% (18/18)", "frontend": "~93% (all flows work; 1 data-correctness issue in comparison tables)"},
+  "test_credentials": "arnaldotecadm@hotmail.com / ADMINar98 (from /app/memory/test_credentials.md) - works",
+  "seed_data_creation": "None. Strictly read-only; no create/edit/delete/import/sign-up performed.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "REAL production data - read only. Backend tests in /app/backend/tests/test_gateway_auth.py use pycognito SRP to get an ID token (pytest.ini adds -n xdist). Accounts: Activo Bank 35b50788-7457-4038-a424-5304b84ad21d (7176.44), BPI 42663728-6b00-405c-afd0-891b16d76e59 (392.92). Current month in env is 2026-10. Retest Category Details / Month Comparison values: Oct Car should be 431,40 €, Oct total expense 663,22 €, no Salary row.",
+  "rca of the issue": "Upstream month-analysis-comparison returns multiple rows per categoryName (apparently one per month/sub-group, e.g. Car 633.68 = Sep value, Car 431.40 = Oct value). Frontend mergeComparison reduces by categoryName with +=, summing both months into 'amount', and applies abs() to every row including income (isExpense=false), so income gets added to the expense Total. Repro: login, Overview > Category Details: Car current month 1065,08 € vs Distribution Oct Car 431,40 €."
+}

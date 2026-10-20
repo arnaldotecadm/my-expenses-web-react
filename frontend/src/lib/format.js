@@ -7,9 +7,9 @@ export const setCurrency = (c) => { currency = c || "BRL"; };
 
 export const fmt = (v) => nf().format(Number(v) || 0);
 
-export const fmtK = (v, digits = 1) => {
+export const fmtK = (v) => {
   const sym = nf().formatToParts(0).find((p) => p.type === "currency")?.value || "";
-  return `${sym}${(v / 1000).toFixed(digits)}k`;
+  return `${(v / 1000).toFixed(Math.abs(v) < 10000 ? 1 : 0).replace(".", ",")}k ${sym}`;
 };
 
 export const fmtSigned = (v) => {

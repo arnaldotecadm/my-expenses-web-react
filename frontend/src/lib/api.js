@@ -22,13 +22,12 @@ const get = (url, account) => http.get(url, { params: { account } }).then((r) =>
 const abs = (v) => Math.abs(Number(v) || 0);
 
 // Adapters: normalise the original API's shapes for the UI
-const mergeComparison = (rows = []) => Object.values(rows.reduce((acc, r) => {
-  const k = r.categoryName || "Uncategorized";
-  acc[k] = acc[k] || { categoryName: k, amount: 0, lastMonthAmount: 0 };
-  acc[k].amount += abs(r.amount);
-  acc[k].lastMonthAmount += abs(r.lastMonthAmount);
-  return acc;
-}, {}));
+const mergeCharts = (cur = [], prev = []) => {
+  const map = {};
+  cur.forEach((c) => { map[c.name] = { categoryName: c.name, amount: c.amount, lastMonthAmount: 0 }; });
+  prev.forEach((c) => { (map[c.name] ||= { categoryName: c.name, amount: 0, lastMonthAmount: 0 }).lastMonthAmount = c.amount; });
+  return Object.values(map);
+};
 
 const expenseChart = (rows = []) => rows
   .filter((c) => c.amount < 0)
@@ -55,7 +54,11 @@ export const api = {
   })),
   graphLast4: (account) => get("/analise/graph-last-4-month", account).then((rows) =>
     rows.map((r) => ({ ...r, income: abs(r.income), expense: abs(r.expense) }))),
-  comparison: (source, target, account) => get(`/analise/month-analysis-comparison/${source}/${target}`, account).then(mergeComparison),
+  // Upstream comparison endpoint mixes months; build it from per-month category charts instead
+  comparison: (source, target, account) => Promise.all([source, target].map((ref) => {
+    const [y, m] = ref.split("-");
+    return get(`/category/chart/${y}/${Number(m)}`, account).then(expenseChart);
+  })).then(([cur, prev]) => mergeCharts(cur, prev)),
 
   categoryChart: (y, m, account) => get(`/category/chart/${y}/${m}`, account).then(expenseChart),
 
