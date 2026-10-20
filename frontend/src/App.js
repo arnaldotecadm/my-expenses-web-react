@@ -14,6 +14,7 @@ import Parties from "@/pages/Parties";
 import Tags from "@/pages/Tags";
 import Planning from "@/pages/Planning";
 import ImportExport from "@/pages/ImportExport";
+import Settings from "@/pages/Settings";
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
             <Route path="/tags" element={<Tags />} />
             <Route path="/planning" element={<Planning />} />
             <Route path="/import-export" element={<ImportExport />} />
+            <Route path="/settings" element={<Settings />} />
           </Routes>
         </AppLayout>
       </BrowserRouter>

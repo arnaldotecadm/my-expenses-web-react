@@ -583,8 +583,11 @@ async def stats(account: Optional[str] = None):
 
 @api_router.delete("/statistics/user/records")
 async def delete_all():
-    await db.transactions.delete_many({})
-    return {"message": "All transactions deleted"}
+    counts = {}
+    for name in ("transactions", "accounts", "budgets", "plannings"):
+        counts[name] = (await db[name].delete_many({})).deleted_count
+    await db.meta.update_one({"wiped": True}, {"$set": {"wiped": True}}, upsert=True)
+    return {"message": "All data deleted", "deleted": counts}
 
 
 @api_router.get("/")
@@ -594,6 +597,8 @@ async def root():
 
 # ---------------- Seed ----------------
 async def seed():
+    if await db.meta.find_one({"wiped": True}):
+        return
     if await db.accounts.count_documents({}) > 0:
         return
     rnd = random.Random(42)

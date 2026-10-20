@@ -12,11 +12,12 @@ export function AccountProvider({ children }) {
   const [selected, setSelected] = useState(null);
 
   useEffect(() => {
-    if (!accounts.length) return;
+    if (isLoading) return;
+    if (!accounts.length) { if (selected) setSelected(null); return; }
     const fresh = selected && accounts.find((a) => a.uuid === selected.uuid);
     if (!fresh) setSelected(accounts[0]);
     else if (fresh !== selected) setSelected(fresh);
-  }, [accounts, selected]);
+  }, [accounts, selected, isLoading]);
 
   return (
     <AccountCtx.Provider value={{ accounts, selected, setSelected, isLoading }}>

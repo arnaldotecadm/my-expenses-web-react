@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { CheckCircle2 } from "lucide-react";
 
 const EMPTY = { item: "", amount: "", date: "", payed: false, amountPayed: "" };
 
@@ -50,7 +51,14 @@ export function PlanningDialog({ open, onOpenChange, initial, defaultDate, onSav
               <Input data-testid="planning-amount-payed-input" type="number" step="0.01" min="0" value={f.amountPayed} onChange={set("amountPayed")} placeholder={String(f.amount || "")} />
             </div>
           )}
-          <DialogFooter>
+          <DialogFooter className="gap-2">
+            {initial && !initial.payed && (
+              <Button type="button" variant="outline" disabled={!valid || saving} data-testid="planning-mark-paid-button"
+                className="sm:mr-auto border-emerald-500/40 text-emerald-700 hover:bg-emerald-500/10 dark:text-emerald-300"
+                onClick={() => onSave({ ...f, amount: Number(f.amount), payed: true, amountPayed: Number(f.amount) })}>
+                <CheckCircle2 className="mr-1.5 h-4 w-4" /> Mark as paid
+              </Button>
+            )}
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} data-testid="planning-cancel-button">Cancel</Button>
             <Button type="submit" disabled={!valid || saving} data-testid="planning-save-button">Save</Button>
           </DialogFooter>

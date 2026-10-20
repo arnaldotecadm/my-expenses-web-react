@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, Receipt, PieChart, TrendingUp, LineChart, BarChart2,
   GitCompare, Users, Tag, Calendar,
-  FileSpreadsheet, Moon, Sun, Menu, X, ChevronDown, Check, Wallet2,
+  FileSpreadsheet, Settings, Database, Moon, Sun, Menu, X, ChevronDown, Check, Wallet2,
 } from "lucide-react";
 import { useAccount } from "@/context/AccountContext";
 import { fmt } from "@/lib/format";
@@ -24,6 +24,7 @@ const NAV = [
   { name: "Tags", icon: Tag, path: "/tags" },
   { name: "Planning", icon: Calendar, path: "/planning" },
   { name: "Import & Export", icon: FileSpreadsheet, path: "/import-export" },
+  { name: "Settings", icon: Settings, path: "/settings" },
 ];
 
 const slug = (s) => s.toLowerCase().replace(/[^a-z]+/g, "-").replace(/(^-|-$)/g, "");
@@ -95,9 +96,9 @@ function NavItems({ onNavigate }) {
   );
 }
 
-function Brand() {
+function Brand({ onNavigate }) {
   return (
-    <div className="flex items-center gap-2.5 px-5 py-5">
+    <NavLink to="/" onClick={onNavigate} data-testid="brand-home-link" className="flex items-center gap-2.5 px-5 py-5 transition-opacity hover:opacity-80">
       <span className="grid h-9 w-9 place-items-center rounded-xl bg-accent text-accent-foreground font-bold">
         R$
       </span>
@@ -107,6 +108,22 @@ function Brand() {
         </div>
         <div className="text-[11px] text-muted-foreground">Personal finance</div>
       </div>
+    </NavLink>
+  );
+}
+
+const NO_ACCOUNT_OK = ["/settings", "/import-export"];
+
+function NoData() {
+  return (
+    <div data-testid="no-data-state" className="flex flex-col items-center justify-center py-28 text-center">
+      <Database className="mb-4 h-12 w-12 text-muted-foreground/50" />
+      <h2 className="text-xl font-bold">No data yet</h2>
+      <p className="mt-1 text-sm text-muted-foreground">Import an account file to get started.</p>
+      <NavLink to="/import-export" data-testid="no-data-import-link"
+        className="mt-5 rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground transition-transform hover:-translate-y-0.5">
+        Go to Import & Export
+      </NavLink>
     </div>
   );
 }
@@ -115,6 +132,7 @@ export function AppLayout({ children }) {
   const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+  const { accounts, isLoading: accountsLoading } = useAccount();
 
   const toggleDark = () => {
     const next = !dark;
@@ -149,7 +167,7 @@ export function AppLayout({ children }) {
               className="fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-border bg-card lg:hidden"
             >
               <div className="flex items-center justify-between">
-                <Brand />
+                <Brand onNavigate={() => setMobileOpen(false)} />
                 <button className="mr-4" onClick={() => setMobileOpen(false)} data-testid="mobile-close">
                   <X className="h-5 w-5" />
                 </button>
@@ -180,7 +198,7 @@ export function AppLayout({ children }) {
           </button>
         </header>
         <main key={location.pathname} className="animate-fade-up max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
-          {children}
+          {!accountsLoading && !accounts.length && !NO_ACCOUNT_OK.includes(location.pathname) ? <NoData /> : children}
         </main>
       </div>
     </div>

@@ -76,7 +76,9 @@ export default function Planning() {
         {isLoading ? <Loader /> : view === "calendar" ? (
           <PlanningCalendar year={year} month={month} items={items}
             onDayClick={(date) => setDialog({ open: true, item: null, date })}
-            onEventClick={(p) => setDialog({ open: true, item: p })} />
+            onEventClick={(p) => setDialog({ open: true, item: p })}
+            onTogglePaid={togglePaid}
+            onMove={(p, date) => save.mutate({ ...p, date })} />
         ) : items.length === 0 ? <EmptyState icon={Calendar} title="No events this month" hint="Add one or copy from the previous month" /> : (
           <div className="divide-y divide-border">
             {items.map((p) => (
