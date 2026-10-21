@@ -7,6 +7,7 @@ import { AccountProvider } from "@/context/AccountContext";
 import { AppLayout } from "@/components/AppLayout";
 import { AuthScreen } from "@/components/AuthScreen";
 import { Loader } from "@/components/Loader";
+import { LoadingOverlay } from "@/components/LoadingOverlay";
 
 import Overview from "@/pages/Overview";
 import Transactions from "@/pages/Transactions";
@@ -36,6 +37,7 @@ function MainApp() {
     <AccountProvider>
       <BrowserRouter>
         <ReturnAfterLogin />
+        <LoadingOverlay />
         <AppLayout>
           <Routes>
             <Route path="/" element={<Overview />} />
