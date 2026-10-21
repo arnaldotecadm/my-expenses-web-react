@@ -3,7 +3,7 @@ import { fetchAuthSession, signOut } from "aws-amplify/auth";
 import { queryClient } from "@/lib/queryClient";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-export const API = `${BACKEND_URL}/api`;
+export const API = `${BACKEND_URL}/api/v1`;
 
 export const http = axios.create({ baseURL: API });
 
