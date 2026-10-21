@@ -6,7 +6,8 @@ import {
 } from "recharts";
 import { api } from "@/lib/api";
 import { useAccountUuid } from "@/context/AccountContext";
-import { fmt, fmtK } from "@/lib/format";
+import { fmt, fmtK, MONTHS } from "@/lib/format";
+import { CategoryDetails } from "@/components/CategoryDetails";
 import { PageHeader } from "@/components/PageHeader";
 import { Panel } from "@/components/Panel";
 import { StatCard } from "@/components/StatCard";
@@ -16,6 +17,7 @@ import { ChartTooltip } from "@/components/ChartTooltip";
 import { INCOME, EXPENSE } from "@/lib/colors";
 
 const axis = { fontSize: 11, fill: "hsl(var(--muted-foreground))" };
+const ref = (y, m) => `${y}-${String(m).padStart(2, "0")}`;
 
 export default function MonthlyAnalysis() {
   const account = useAccountUuid();
@@ -33,6 +35,7 @@ export default function MonthlyAnalysis() {
     week: `Week ${w.week}`, Income: w.income, Expenses: w.expense,
   }));
   const balance = (data?.income || 0) - (data?.expense || 0);
+  const [py, pm] = month === 1 ? [year - 1, 12] : [year, month - 1];
 
   return (
     <>
@@ -70,6 +73,10 @@ export default function MonthlyAnalysis() {
               </div>
             )}
           </Panel>
+          <div className="mt-6">
+            <CategoryDetails account={account} prefix="monthly" current={ref(year, month)} previous={ref(py, pm)}
+              currentLabel={`${MONTHS[month - 1]} ${year}`} previousLabel={`${MONTHS[pm - 1]} ${py}`} />
+          </div>
         </>
       )}
     </>

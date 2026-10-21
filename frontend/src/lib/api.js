@@ -59,9 +59,16 @@ const abs = (v) => Math.abs(Number(v) || 0);
 // Adapters: normalise the original API's shapes for the UI
 const mergeCharts = (cur = [], prev = []) => {
   const map = {};
-  cur.forEach((c) => { (map[c.name] ||= { categoryName: c.name, amount: 0, lastMonthAmount: 0 }).amount += c.amount; });
-  prev.forEach((c) => { (map[c.name] ||= { categoryName: c.name, amount: 0, lastMonthAmount: 0 }).lastMonthAmount += c.amount; });
-  return Object.values(map);
+  const add = (list, field) => list.forEach((c) => {
+    const row = (map[c.name] ||= { categoryName: c.name, amount: 0, lastMonthAmount: 0, subs: {} });
+    row[field] += c.amount;
+    c.subCategoryList.forEach((s) => {
+      (row.subs[s.name] ||= { name: s.name, amount: 0, lastMonthAmount: 0 })[field] += s.amount;
+    });
+  });
+  add(cur, "amount");
+  add(prev, "lastMonthAmount");
+  return Object.values(map).map((r) => ({ ...r, subs: Object.values(r.subs).sort((a, b) => b.amount - a.amount) }));
 };
 
 const expenseChart = (rows = []) => rows
