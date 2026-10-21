@@ -5,7 +5,8 @@ import { AnimatePresence, motion } from "framer-motion";
 const SHOW_DELAY_MS = 250;
 
 export function LoadingOverlay() {
-  const busy = useIsFetching() + useIsMutating() > 0;
+  // Only block the screen when there is nothing to show yet; background refetches stay silent
+  const busy = useIsFetching({ predicate: (q) => q.state.data === undefined }) + useIsMutating() > 0;
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {

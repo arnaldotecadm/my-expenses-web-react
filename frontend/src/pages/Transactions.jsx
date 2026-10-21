@@ -1,4 +1,6 @@
-import { useMemo, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+
+const PAGE_SIZE = 3;
 import { useQuery } from "@tanstack/react-query";
 import { Receipt, Search, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { api } from "@/lib/api";
@@ -23,10 +25,16 @@ export default function Transactions() {
     enabled: !!account,
   });
 
+  const deferredSearch = useDeferredValue(search);
+  const [visible, setVisible] = useState(PAGE_SIZE);
+  const sentinel = useRef(null);
+
+  useEffect(() => setVisible(PAGE_SIZE), [account, month, deferredSearch]);
+
   const filtered = useMemo(() => {
     let groups = data;
     if (month !== "all") groups = groups.filter((g) => g.reference === month);
-    const q = search.trim().toUpperCase();
+    const q = deferredSearch.trim().toUpperCase();
     return groups
       .map((g) => ({
         ...g,
@@ -39,7 +47,18 @@ export default function Transactions() {
         ),
       }))
       .filter((g) => g.transactionList.length);
-  }, [data, month, search]);
+  }, [data, month, deferredSearch]);
+
+  const shown = filtered.slice(0, visible);
+  const hasMore = visible < filtered.length;
+
+  useEffect(() => {
+    const el = sentinel.current;
+    if (!el || !hasMore) return;
+    const io = new IntersectionObserver(([e]) => e.isIntersecting && setVisible((v) => v + PAGE_SIZE), { rootMargin: "600px" });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [hasMore, shown.length]);
 
   if (isLoading) return <Loader />;
 
@@ -75,7 +94,7 @@ export default function Transactions() {
         <EmptyState icon={Receipt} title="No transactions found" hint="Try adjusting your filters" />
       ) : (
         <div className="space-y-6">
-          {filtered.map((g) => (
+          {shown.map((g) => (
             <div key={g.reference} className="rounded-2xl border border-border bg-card">
               <div className="sticky top-[61px] z-10 flex flex-wrap items-center justify-between gap-2 rounded-t-2xl border-b border-border bg-secondary/90 px-5 py-3 backdrop-blur-md">
                 <div className="font-semibold">{g.summaryDTO.month}</div>
@@ -122,6 +141,14 @@ export default function Transactions() {
               </div>
             </div>
           ))}
+          {hasMore && (
+            <div ref={sentinel} className="flex justify-center py-4">
+              <button data-testid="transactions-load-more" onClick={() => setVisible((v) => v + PAGE_SIZE)}
+                className="rounded-xl border border-border px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground">
+                Load more months ({filtered.length - visible} remaining)
+              </button>
+            </div>
+          )}
         </div>
       )}
     </>
