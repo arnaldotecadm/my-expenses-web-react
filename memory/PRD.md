@@ -16,3 +16,10 @@ Modernize the Angular financial app (github.com/arnaldotecadm/my-expenses-web) i
 - P0 (user deferred): Budgets list/form, Budget Analysis list/detail (upstream /budget endpoints exist; /budget/analysis returned 400 without params).
 - P1: Touch-friendly reschedule on mobile; admin-only features using the cognito:groups ADMIN claim.
 - P2: Stable legend order on Month Comparison chart.
+
+## 2026-10 — Direct calls to the original API
+- Frontend calls `${REACT_APP_API_URL}/api/v1` directly (REACT_APP_API_URL=https://api-my-expenses.vertice-sistemas.com); REACT_APP_BACKEND_URL kept unchanged (platform-protected).
+- Account sent as `selectedAccount` header (no query params). Planning create/edit via POST /planning.
+- Login redirect only on 401 (user choice). Upstream returns 403 (no token) / 500 (bad token).
+- PENDING (user side): upstream CORS must allow PUT and DELETE; until then planning delete, copy-over, clean-up and delete-all fail from the browser.
+- FastAPI gateway in backend/server.py is now unused by the frontend.

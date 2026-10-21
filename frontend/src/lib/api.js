@@ -2,8 +2,7 @@ import axios from "axios";
 import { fetchAuthSession, signOut } from "aws-amplify/auth";
 import { queryClient } from "@/lib/queryClient";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-export const API = `${BACKEND_URL}/api`;
+export const API = `${process.env.REACT_APP_API_URL}/api/v1`;
 
 export const http = axios.create({ baseURL: API });
 
@@ -53,7 +52,8 @@ http.interceptors.response.use((r) => r, async (error) => {
   return Promise.reject(error);
 });
 
-const get = (url, account) => http.get(url, { params: { account } }).then((r) => r.data);
+const acc = (account) => (account ? { headers: { selectedAccount: account } } : {});
+const get = (url, account) => http.get(url, acc(account)).then((r) => r.data);
 const abs = (v) => Math.abs(Number(v) || 0);
 
 // Adapters: normalise the original API's shapes for the UI
@@ -104,10 +104,10 @@ export const api = {
   tag: (name, account) => get(`/tag/${encodeURIComponent(name)}`, account),
 
   plannings: (account) => get("/planning", account),
-  savePlanning: (body, account) => http.post("/planning", body, { params: { account } }).then((r) => r.data),
-  deletePlanning: (uuid, account) => http.delete(`/planning/${uuid}`, { params: { account } }).then((r) => r.data),
-  copyOver: (ym, account) => http.put(`/planning/copy-over/${ym}`, "", { params: { account } }).then((r) => r.data),
-  cleanUp: (ym, account) => http.delete(`/planning/clean-up/${ym}`, { params: { account } }).then((r) => r.data),
+  savePlanning: (body, account) => http.post("/planning", body, acc(account)).then((r) => r.data),
+  deletePlanning: (uuid, account) => http.delete(`/planning/${uuid}`, acc(account)).then((r) => r.data),
+  copyOver: (ym, account) => http.put(`/planning/copy-over/${ym}`, "", acc(account)).then((r) => r.data),
+  cleanUp: (ym, account) => http.delete(`/planning/clean-up/${ym}`, acc(account)).then((r) => r.data),
 
   stats: () => http.get("/statistics/user/records").then((r) => r.data),
   deleteAll: () => http.delete("/statistics/user/records").then((r) => r.data),
