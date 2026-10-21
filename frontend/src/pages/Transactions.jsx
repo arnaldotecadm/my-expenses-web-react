@@ -1,6 +1,5 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 
-const PAGE_SIZE = 3;
 import { useQuery } from "@tanstack/react-query";
 import { Receipt, Search, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { api } from "@/lib/api";
@@ -13,6 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+
+const PAGE_SIZE = 3;
 
 export default function Transactions() {
   const account = useAccountUuid();

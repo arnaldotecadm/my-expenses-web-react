@@ -1,12 +1,6 @@
-import { Loader2 } from "lucide-react";
-
-export function Loader({ label = "Loading…" }) {
-  return (
-    <div className="flex items-center justify-center py-24 text-muted-foreground gap-2" data-testid="loader">
-      <Loader2 className="h-5 w-5 animate-spin" />
-      <span className="text-sm">{label}</span>
-    </div>
-  );
+// The global LoadingOverlay shows progress; this only reserves space to avoid a double spinner
+export function Loader() {
+  return <div className="py-24" data-testid="loader" aria-busy="true" />;
 }
 
 export function EmptyState({ icon: Icon, title, hint }) {

@@ -6,7 +6,6 @@ import { Toaster } from "@/components/ui/sonner";
 import { AccountProvider } from "@/context/AccountContext";
 import { AppLayout } from "@/components/AppLayout";
 import { AuthScreen } from "@/components/AuthScreen";
-import { Loader } from "@/components/Loader";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
 
 import Overview from "@/pages/Overview";
@@ -61,7 +60,11 @@ function MainApp() {
 
 function AuthGate() {
   const { authStatus } = useAuthenticator((c) => [c.authStatus]);
-  if (authStatus === "configuring") return <div className="grid min-h-screen place-items-center"><Loader /></div>;
+  if (authStatus === "configuring") return (
+    <div className="grid min-h-screen place-items-center" data-testid="app-starting">
+      <span className="h-10 w-10 animate-spin rounded-full border-4 border-accent/20 border-t-accent" />
+    </div>
+  );
   return authStatus === "authenticated" ? <MainApp /> : <AuthScreen />;
 }
 

@@ -1,0 +1,29 @@
+{
+  "summary": "Frontend-only READ-ONLY retest of the 'app freezes, then the loading screen shows after the data' bug (backend skipped as requested). All 5 requested items pass. (1) No freeze: a PerformanceObserver('longtask') was attached after login and every sidebar item was clicked (12 items, then Overview and Transactions again). The longest task was 152ms (History). Transactions was 115ms and 125ms, down from 2.9s before the fix. No task was over 500ms. There were no console errors and no failed /api calls. (2) Overlay timing, with /api/** delayed 2.5s by page.route: Distribution (first visit) showed the overlay at 0.34s, the content at 3.07s and the overlay was gone at 3.35s. History: 0.31s / 2.86s / 3.08s. Switching to BPI on the Transactions page: overlay at 0.26s, data with no overlay at 3.31s. Going back to Overview or Transactions with cached Activo data showed no overlay and the content at about 0.15s. (3) Transactions on Activo first renders 3 months (Oct, Sep, Aug 2026). The button read 'Load more months (49 remaining)'; clicking it went to 6 groups and 46 remaining. Scrolling to the bottom auto-loaded more (9 groups, 43 remaining). BPI has 4 months: 3 groups, then 4 after scrolling, and the button disappears. The month filter lists 53 options (All months plus 2026-10 back to 2022-07). Choosing '2023 - December' shows only that group (69 transactions) and no load-more button. A search for the payee 'Unknown' returned groups from 2026-March back to 2023-December/November, so the search covers all months and not only the rendered ones. Search typing caused no long tasks, and clearing the search returns to 3 groups. (4) Regression: BPI stays selected after a reload on /distribution. A forced 401 on /api sent the user to the login screen, and after logging in again the app returned to /four-months-review with BPI still selected and no stuck overlay.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Pages loading for the first time (e.g. Transactions after an account switch)", "issues": ["Two loaders show at once: the page's own <Loader/> ('Loading...' near the top) and the full-screen LoadingOverlay card. Cosmetic. Consider making the page Loader an empty placeholder while the overlay is visible."]}
+    ]
+  },
+  "test_report_links": [],
+  "action_items": [
+    "Optional/cosmetic: avoid the double loader (page Loader plus global overlay) on first loads",
+    "Optional: move `const PAGE_SIZE = 3;` in Transactions.jsx below the import block (it is currently between imports, which breaks the eslint import/first rule)"
+  ],
+  "critical_code_review_comments": [
+    "Transactions.jsx: PAGE_SIZE is declared between import statements. It works because imports are hoisted, but it is a lint/style violation.",
+    "Transactions.jsx: one month group is still rendered whole. A month with a very large number of transactions would render all of them at once. This is fine with the current data (largest month seen is about 100 rows).",
+    "Seen once (Activo): right after clicking load-more, the first window.scrollTo(bottom) did not trigger the IntersectionObserver within 800ms, and a second scroll did. Later scroll-into-view tests auto-loaded reliably. Probably a timing effect from the observer being re-created when shown.length changes. Low impact, because the button is always there as a fallback.",
+    "LoadingOverlay predicate (data === undefined) is correct: cached pages and background refetches stay silent, and first-time fetches and account switches show the overlay after the 250ms delay."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "skipped (frontend only)", "frontend": "100% (5/5 requested items pass)"},
+  "test_credentials": "arnaldotecadm@hotmail.com / ADMINar98 (from /app/memory/test_credentials.md) - works",
+  "seed_data_creation": "None. Read-only.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "REAL production data, read-only. Login: input[name=username], input[name=password], button[type=submit]. page.add_init_script did not populate window globals in this tool, so install the PerformanceObserver via page.evaluate after login. Throttle with page.route('**/api/**') and asyncio.sleep(2.5) before route.continue_(). Month group cards: 'div.space-y-6 > div.rounded-2xl'. Activo has 52 months, BPI has 4. A forced 401 (route.fulfill 401) tests return-after-login."
+}
