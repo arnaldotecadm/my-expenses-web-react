@@ -14,10 +14,17 @@ http.interceptors.request.use(async (config) => {
   return config;
 });
 
+export const RETURN_KEY = "returnTo";
+export const rememberPage = () => {
+  const path = window.location.pathname + window.location.search;
+  if (path !== "/") sessionStorage.setItem(RETURN_KEY, path);
+};
+
 let redirecting = false;
 const redirectToLogin = async () => {
   if (redirecting) return;
   redirecting = true;
+  rememberPage();
   queryClient.clear();
   try {
     await signOut();

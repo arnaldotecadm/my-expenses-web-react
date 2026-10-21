@@ -7,6 +7,7 @@ import {
   FileSpreadsheet, Settings, Database, Moon, Sun, Menu, X, ChevronDown, Check, Wallet2, LogOut,
 } from "lucide-react";
 import { useAuthenticator } from "@aws-amplify/ui-react";
+import { rememberPage } from "@/lib/api";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAccount } from "@/context/AccountContext";
 import { fmt } from "@/lib/format";
@@ -122,7 +123,7 @@ function UserFooter() {
     <div className="flex items-center gap-2 border-t border-border p-3">
       <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-accent/15 text-xs font-bold uppercase text-accent">{email?.[0]}</span>
       <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground" data-testid="sidebar-user-email">{email}</span>
-      <button data-testid="sidebar-sign-out" onClick={() => { qc.clear(); signOut(); }} aria-label="Sign out" title="Sign out"
+      <button data-testid="sidebar-sign-out" onClick={() => { rememberPage(); qc.clear(); signOut(); }} aria-label="Sign out" title="Sign out"
         className="grid h-8 w-8 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-red-500/10 hover:text-red-500">
         <LogOut className="h-4 w-4" />
       </button>

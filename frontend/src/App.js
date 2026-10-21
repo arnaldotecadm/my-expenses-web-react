@@ -1,4 +1,6 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useEffect } from "react";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { RETURN_KEY } from "@/lib/api";
 import { Authenticator, useAuthenticator } from "@aws-amplify/ui-react";
 import { Toaster } from "@/components/ui/sonner";
 import { AccountProvider } from "@/context/AccountContext";
@@ -19,10 +21,21 @@ import Planning from "@/pages/Planning";
 import ImportExport from "@/pages/ImportExport";
 import Settings from "@/pages/Settings";
 
+function ReturnAfterLogin() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const path = sessionStorage.getItem(RETURN_KEY);
+    sessionStorage.removeItem(RETURN_KEY);
+    if (path && path !== window.location.pathname + window.location.search) navigate(path, { replace: true });
+  }, [navigate]);
+  return null;
+}
+
 function MainApp() {
   return (
     <AccountProvider>
       <BrowserRouter>
+        <ReturnAfterLogin />
         <AppLayout>
           <Routes>
             <Route path="/" element={<Overview />} />
