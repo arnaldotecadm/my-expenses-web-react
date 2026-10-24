@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Calendar, CalendarDays, List, Plus, Copy, Eraser, Pencil, Trash2, CheckCircle2, Circle, Wallet, Clock } from "lucide-react";
+import { Calendar, CalendarDays, List, Plus, Copy, Eraser, Pencil, Trash2, CheckCircle2, Circle, Wallet, Clock, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 import { useAccountUuid } from "@/context/AccountContext";
-import { fmt } from "@/lib/format";
+import { fmt, MONTHS } from "@/lib/format";
 import { PageHeader } from "@/components/PageHeader";
 import { Panel } from "@/components/Panel";
 import { StatCard } from "@/components/StatCard";
@@ -30,6 +30,13 @@ export default function Planning() {
   const [view, setView] = useState("calendar");
   const [toDelete, setToDelete] = useState(null);
   const ym = `${year}-${pad(month)}`;
+  const isCurrent = year === now.getFullYear() && month === now.getMonth() + 1;
+  const shift = (delta) => {
+    const d = new Date(year, month - 1 + delta, 1);
+    setYear(d.getFullYear());
+    setMonth(d.getMonth() + 1);
+  };
+  const goToday = () => { setYear(now.getFullYear()); setMonth(now.getMonth() + 1); };
 
   const { data: all = [], isLoading } = useQuery({ queryKey: ["plannings", account], queryFn: () => api.plannings(account), enabled: !!account });
   const items = all.filter((p) => p.date.startsWith(ym)).sort((a, b) => a.date.localeCompare(b.date));
@@ -78,6 +85,27 @@ export default function Planning() {
             <Plus className="mr-1.5 h-4 w-4" /> New event
           </Button>
         </>}>
+        <div className="mb-4 flex items-center justify-between gap-2" data-testid="planning-month-nav">
+          <button onClick={() => shift(-1)} data-testid="planning-prev-month" aria-label="Previous month"
+            className="grid h-9 w-9 place-items-center rounded-xl border border-border transition-colors hover:bg-secondary">
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)" }} data-testid="planning-month-title">
+              {MONTHS[month - 1]} {year}
+            </h3>
+            {!isCurrent && (
+              <button onClick={goToday} data-testid="planning-today-button"
+                className="rounded-lg border border-border px-2.5 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground">
+                Today
+              </button>
+            )}
+          </div>
+          <button onClick={() => shift(1)} data-testid="planning-next-month" aria-label="Next month"
+            className="grid h-9 w-9 place-items-center rounded-xl border border-border transition-colors hover:bg-secondary">
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
         {isLoading ? <Loader /> : view === "calendar" ? (
           <PlanningCalendar year={year} month={month} items={items}
             onDayClick={(date) => setDialog({ open: true, item: null, date })}
