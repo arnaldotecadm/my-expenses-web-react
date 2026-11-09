@@ -15,12 +15,37 @@ import {
 
 const PAGE_SIZE = 3;
 
+const sums = (list) => list.reduce((a, t) => {
+  if (t.amount >= 0) a.income += t.amount; else a.expense += -t.amount;
+  return a;
+}, { income: 0, expense: 0 });
+
+function FilterSummary({ totals }) {
+  const net = totals.income - totals.expense;
+  const items = [
+    ["count", "Transactions", String(totals.count), "text-foreground"],
+    ["income", "Income", fmt(totals.income), "text-emerald-600 dark:text-emerald-400"],
+    ["expense", "Expenses", fmt(totals.expense), "text-red-600 dark:text-red-400"],
+    ["net", "Net", fmtSigned(net), net >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"],
+  ];
+  return (
+    <div data-testid="transactions-filter-summary" className="mb-5 grid grid-cols-2 gap-3 rounded-2xl border border-accent/30 bg-accent/5 p-4 sm:grid-cols-4">
+      {items.map(([k, label, value, tone]) => (
+        <div key={k}>
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Filtered {label.toLowerCase()}</div>
+          <div data-testid={`transactions-filter-${k}`} className={`mt-0.5 text-lg font-bold tabnum ${tone}`}>{value}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function Transactions() {
   const account = useAccountUuid();
   const [search, setSearch] = useState("");
   const [month, setMonth] = useState("all");
 
-  const { data = [], isLoading } = useQuery({
+  const { data = [], isPending } = useQuery({
     queryKey: ["all-summary", account],
     queryFn: () => api.allWithSummary(account),
     enabled: !!account,
@@ -37,18 +62,24 @@ export default function Transactions() {
     if (month !== "all") groups = groups.filter((g) => g.reference === month);
     const q = deferredSearch.trim().toUpperCase();
     return groups
-      .map((g) => ({
-        ...g,
-        transactionList: g.transactionList.filter(
+      .map((g) => {
+        const list = g.transactionList.filter(
           (t) =>
             !q ||
             (t.category || "").toUpperCase().includes(q) ||
             (t.subCategory || "").toUpperCase().includes(q) ||
             (t.payee || "").toUpperCase().includes(q)
-        ),
-      }))
+        );
+        return { ...g, transactionList: list, ...sums(list) };
+      })
       .filter((g) => g.transactionList.length);
   }, [data, month, deferredSearch]);
+
+  const searching = !!deferredSearch.trim();
+  const filtering = searching || month !== "all";
+  const totals = useMemo(() => filtered.reduce((a, g) => ({
+    income: a.income + g.income, expense: a.expense + g.expense, count: a.count + g.transactionList.length,
+  }), { income: 0, expense: 0, count: 0 }), [filtered]);
 
   const shown = filtered.slice(0, visible);
   const hasMore = visible < filtered.length;
@@ -61,7 +92,7 @@ export default function Transactions() {
     return () => io.disconnect();
   }, [hasMore, shown.length]);
 
-  if (isLoading) return <Loader />;
+  if (isPending) return <Loader />;
 
   return (
     <>
@@ -91,6 +122,8 @@ export default function Transactions() {
         </Select>
       </div>
 
+      {filtering && filtered.length > 0 && <FilterSummary totals={totals} />}
+
       {filtered.length === 0 ? (
         <EmptyState icon={Receipt} title="No transactions found" hint="Try adjusting your filters" />
       ) : (
@@ -99,12 +132,15 @@ export default function Transactions() {
             <div key={g.reference} className="rounded-2xl border border-border bg-card">
               <div className="sticky top-[61px] z-10 flex flex-wrap items-center justify-between gap-2 rounded-t-2xl border-b border-border bg-secondary/90 px-5 py-3 backdrop-blur-md">
                 <div className="font-semibold">{g.summaryDTO.month}</div>
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs sm:text-sm tabnum">
-                  <span className="text-emerald-600 dark:text-emerald-400">{fmt(g.summaryDTO.income)}</span>
-                  <span className="text-red-600 dark:text-red-400">{fmt(g.summaryDTO.expense)}</span>
-                  <span className="text-muted-foreground">
-                    {fmt(g.summaryDTO.opening)} → <span className="font-semibold text-foreground">{fmt(g.summaryDTO.total)}</span>
-                  </span>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs sm:text-sm tabnum" data-testid={`transactions-month-totals-${g.reference}`}>
+                  {searching && <span className="rounded-full bg-accent/15 px-2 py-0.5 text-[11px] font-semibold text-accent">{g.transactionList.length} matching</span>}
+                  <span className="text-emerald-600 dark:text-emerald-400">{fmt(searching ? g.income : g.summaryDTO.income)}</span>
+                  <span className="text-red-600 dark:text-red-400">{fmt(searching ? -g.expense : g.summaryDTO.expense)}</span>
+                  {!searching && (
+                    <span className="text-muted-foreground">
+                      {fmt(g.summaryDTO.opening)} → <span className="font-semibold text-foreground">{fmt(g.summaryDTO.total)}</span>
+                    </span>
+                  )}
                 </div>
               </div>
               <div className="divide-y divide-border">
